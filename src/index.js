@@ -57,6 +57,10 @@ app.get(`/l_homepage/:username`, (req, res) => {
     res.render("l_homepage");
 });
 
+app.get(`/s_homepage/:rollNumber`, (req, res) => {
+    res.render("s_homepage");
+});
+
 
 // -------------------------------------------------------------
 // --- ROUTES FOR ADDING STUDENTS, LECTURERS AND CLASSES -------
@@ -325,9 +329,12 @@ app.get('/api/lecturer/:username', async (req, res) => {
 
 // --------- Subsection: Route for Marks Handling ------------
 
+
 // ------------------------------------------------
 // --------- STUDENT DASHBOARD ROUTES ------------
 // ------------------------------------------------
+
+
 
 // ------------------------------------------------
 // ---------- ROUTES FOR LOGGING IN ---------------
@@ -335,24 +342,24 @@ app.get('/api/lecturer/:username', async (req, res) => {
 
 // Route: Login for students
 app.post("/login", async (req, res) => {
-  try {
-    const { rollNumber , password } = req.headers;
-    const check = await masterStudent.findOne({ rollNumber })
-    if (!check) {
-      res.send("Roll Number is Invalid")
-    }
-    // comparing passwords
-    const isPasswordMatch = password === check.password.toString()
+    try {
+        const rollNumber = req.headers.rollnumber;
+        const password = req.headers.password;
+        
+        const student = await Student.findOne({ rollnumber: rollNumber });
+        if (!student) {
+            return res.json({ success: false, error: "Roll Number is Invalid" });
+        }
 
-    if (isPasswordMatch) {
-      res.redirect(`/s_homepage/${rollNumber}`)
-    } else {
-      res.send("wrong password")
+        if (password !== student.password) {
+            return res.json({ success: false, error: "Invalid password" });
+        }
+
+        res.json({ success: true, redirect: `/s_homepage/${rollNumber}` });
+    } catch (error) {
+        res.json({ success: false, error: "Login failed" });
     }
-  } catch {
-    res.send("Wrong Details")
-  }
-})
+});
 
 app.post("/lecturer-login", async (req, res) => {
     try {
