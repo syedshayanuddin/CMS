@@ -2,7 +2,7 @@ const express = require("express")
 const path = require("path")
 const bcrypt = require("bcrypt")
 const bodyParser = require("body-parser")
-const { Student, Lecturer, Class, Attendance, SubjectAssignment } = require("./config")
+const { Student, Lecturer, Class, Attendance, SubjectAssignment, Marks} = require("./config")
 const mongoose = require("mongoose")
 
 const app = express()
@@ -328,6 +328,75 @@ app.get('/api/lecturer/:username', async (req, res) => {
 });
 
 // --------- Subsection: Route for Marks Handling ------------
+// Get student marks
+app.get('/api/marks/:classID/:subject', async (req, res) => {
+    try {
+        const students = await Student.find({ class: req.params.classID });
+        const marksPromises = students.map(async (student) => {
+            const markRecord = await Marks.findOne({ student: student._id, 'marks.subject': req.params.subject });
+            return {
+                student_id: student._id,
+                rollnumber: student.rollnumber,
+                name: student.name,
+                marks: markRecord ? markRecord.marks.find(m => m.subject === req.params.subject) : {
+                    subject: req.params.subject,
+                    CIE1: 0,
+                    CIE2: 0,
+                    Assignment: 0
+                }
+            };
+        });
+        const results = await Promise.all(marksPromises);
+        res.json(results);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Save/Update marks
+app.post('/api/marks/update', async (req, res) => {
+    try {
+        const { student_id, subject, CIE1, CIE2, Assignment } = req.body;
+        
+        let markRecord = await Marks.findOne({ student: student_id });
+        
+        if (!markRecord) {
+            markRecord = new Marks({
+                student: student_id,
+                marks: [{
+                    subject,
+                    CIE1,
+                    CIE2,
+                    Assignment
+                }]
+            });
+        } else {
+            const subjectIndex = markRecord.marks.findIndex(m => m.subject === subject);
+            if (subjectIndex >= 0) {
+                markRecord.marks[subjectIndex] = {
+                    subject,
+                    CIE1,
+                    CIE2,
+                    Assignment
+                };
+            } else {
+                markRecord.marks.push({
+                    subject,
+                    CIE1,
+                    CIE2,
+                    Assignment
+                });
+            }
+        }
+        
+        await markRecord.save();
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+
 
 
 // ------------------------------------------------

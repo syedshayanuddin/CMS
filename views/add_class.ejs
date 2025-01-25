@@ -5,58 +5,108 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Class</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f4f4f4;
-        }
-        .container {
-            max-width: 500px;
-            margin: auto;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            font-weight: bold;
-        }
-        input, select, button {
-            width: 100%;
-            padding: 10px;
-            margin-top: 5px;
-        }
-        .subject-container {
-            display: flex;
-            gap: 10px;
-        }
-        .add-btn {
-            margin-top: 10px;
-            cursor: pointer;
-            background-color: green;
-            color: white;
-            border: none;
-        }
-        .remove-btn {
-            background-color: red;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        button {
-            background-color: blue;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
+body {
+   font-family: Arial, sans-serif;
+   background: #f4f4f4;
+   margin: 0;
+   /* padding: 20px; */
+   text-align: center;
+}
+
+.container {
+   max-width: 800px;
+   margin: auto;
+   background: white;
+   padding: 25px;
+   border-radius: 8px;
+   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+   text-align: left;
+}
+
+.form-group {
+   margin-bottom: 15px;
+}
+
+label {
+    font-weight: bold;
+   display: block;
+   margin-bottom: 5px;
+}
+
+input, select {
+   width: 100%;
+   padding: 8px;
+   border: 1px solid #ddd;
+   border-radius: 4px;
+   box-sizing: border-box;
+}
+
+.subject-container {
+   display: flex;
+   gap: 10px;
+   align-items: center;
+   margin-bottom: 8px;
+}
+
+.subject-container input {
+   flex: 1;
+}
+
+.add-btn, .remove-btn {
+   padding: 8px 15px;
+   border: none;
+   border-radius: 4px;
+   color: white;
+   cursor: pointer;
+}
+
+.add-btn {
+   background: #4CAF50;
+   width: auto;
+   margin-top: 8px;
+}
+
+.remove-btn {
+   background: #f44336;
+   width: 40px;
+}
+
+button[type="submit"] {
+   background: #2196F3;
+   color: white;
+   padding: 10px 20px;
+   border: none;
+   border-radius: 4px;
+   cursor: pointer;
+   width: auto;
+   margin-top: 20px;
+}
+
+#timetable input {
+   margin: 4px 0;
+}
+
+.navbar {
+   background: #1a237e;
+   color: white;
+   padding: 15px 25px;
+   margin-bottom: 20px;
+   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.main-heading {
+   margin: 0;
+   font-size: 24px;
+   font-weight: bold;
+}
     </style>
 </head>
 <body>
+    <div class="navbar">
+        <h2 class="main-heading">Add a New Class</h2>
+    </div>
     <div class="container">
-        <h2>Add New Class</h2>
+
         <form id="classForm">
             <div class="form-group">
                 <label for="classID">Class ID:</label>

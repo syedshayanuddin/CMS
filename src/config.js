@@ -100,6 +100,21 @@ const SubjectAssignmentSchema = new mongoose.Schema({
 });
 SubjectAssignmentSchema.index({ classID: 1, subject: 1 }, { unique: true });
 
+// Marks Schema
+const MarksSchema = new mongoose.Schema({
+    student: { 
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Student',
+        required: true 
+    },
+    marks: [{
+        subject: { type: String, required: true },
+        CIE1: { type: Number, default: 0 },
+        CIE2: { type: Number, default: 0 },
+        Assignment: { type: Number, default: 0 }
+    }]
+});
+
 
 
 // Export models
@@ -108,5 +123,6 @@ const Student = mongoose.model("Student", StudentSchema);
 const Class = mongoose.model("Class", ClassSchema);
 const Attendance = mongoose.model("Attendance", AttendanceSchema);
 const SubjectAssignment = mongoose.model("SubjectAssignment", SubjectAssignmentSchema);
+const Marks = mongoose.model("Marks", MarksSchema);
 
-module.exports = { Lecturer, Student, Class, Attendance, SubjectAssignment };
+module.exports = { Lecturer, Student, Class, Attendance, SubjectAssignment, Marks };

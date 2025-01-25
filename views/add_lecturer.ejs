@@ -5,51 +5,97 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Lecturer</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: auto;
-            padding: 20px;
-            background-color: #f4f4f4;
-        }
-        form {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-        }
-        label {
-            display: block;
-            margin-top: 10px;
-            font-weight: bold;
-        }
-        input, select, button {
-            width: 100%;
-            padding: 8px;
-            margin-top: 5px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        #selectedClasses {
-            list-style: none;
-            padding: 0;
-        }
-        #selectedClasses li {
-            background: #d1e7dd;
-            padding: 8px;
-            margin-top: 5px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-radius: 5px;
-        }
-        #selectedClasses button {
-            background: red;
-            color: white;
-            border: none;
-            padding: 5px;
-            cursor: pointer;
-        }
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f4f4;
+  margin: 0;
+  text-align: center;
+}
+
+.navbar {
+  background: #1a237e;
+  color: white;
+  padding: 15px 25px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.main-heading {
+  margin: 0;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+form {
+  max-width: 800px;
+  margin: auto;
+  background: white;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  text-align: left;
+}
+
+label {
+  font-weight: bold;
+  display: block;
+  margin-bottom: 5px;
+}
+
+input, select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-sizing: border-box;
+  margin-bottom: 15px;
+}
+
+#selectedClasses {
+  list-style: none;
+  padding: 0;
+}
+
+#selectedClasses li {
+  background: #e8f5e9;
+  padding: 10px;
+  margin: 5px 0;
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#addClassBtn {
+  background: #4CAF50;
+  color: white;
+  padding: 8px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin: 10px 0;
+}
+
+#selectedClasses button {
+  background: #f44336;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  width: auto;
+}
+
+button[type="submit"] {
+  background: #2196F3;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  width: auto;
+  margin-top: 20px;
+}
     </style>
 <script>
     // Declare selectedClasses globally so that it can be accessed in the submitForm function
@@ -143,7 +189,9 @@
 </script>
 </head>
 <body>
-    <h2>Add Lecturer</h2>
+    <div class="navbar">
+        <h2 class="main-heading">Add a New Lecturer</h2>
+    </div>
     <form id="lecturerForm" onsubmit="submitForm(event)">
         <label for="name">Name:</label>
         <input type="text" id="name" name="name" required>
