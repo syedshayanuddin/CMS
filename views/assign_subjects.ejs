@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Assign Subjects</title>
+    <style>
+        body { max-width: 600px; margin: auto; padding: 20px; }
+        form { background: white; padding: 20px; border-radius: 8px; }
+        select, button { width: 100%; padding: 8px; margin: 5px 0 15px; }
+    </style>
+</head>
+<body>
+    <h2>Assign Subjects to Lecturers</h2>
+    <form id="assignmentForm">
+        <label for="classSelect">Class:</label>
+        <select id="classSelect" required>
+            <option value="">Select Class</option>
+        </select>
+
+        <label for="subjectSelect">Subject:</label>
+        <select id="subjectSelect" required>
+            <option value="">Select Subject</option>
+        </select>
+
+        <label for="lecturerSelect">Lecturer:</label>
+        <select id="lecturerSelect" required>
+            <option value="">Select Lecturer</option>
+        </select>
+
+        <button type="submit">Assign Subject</button>
+    </form>
+
+    <script>
+        async function loadData() {
+            try {
+                const [classesRes, lecturersRes] = await Promise.all([
+                    fetch('/api/classes'),
+                    fetch('/api/lecturers')
+                ]);
+                
+                const classes = await classesRes.json();
+                const lecturers = await lecturersRes.json();
+
+                const classSelect = document.getElementById('classSelect');
+                const lecturerSelect = document.getElementById('lecturerSelect');
+
+                classes.forEach(cls => {
+                    const option = document.createElement('option');
+                    option.value = cls.classID;
+                    option.textContent = cls.classID;
+                    classSelect.appendChild(option);
+                });
+
+                lecturers.forEach(lecturer => {
+                    const option = document.createElement('option');
+                    option.value = lecturer.lecturer_id;
+                    option.textContent = lecturer.name;
+                    lecturerSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading data:', error);
+            }
+        }
+
+        document.getElementById('classSelect').addEventListener('change', async function() {
+            const classID = this.value;
+            const subjectSelect = document.getElementById('subjectSelect');
+            subjectSelect.innerHTML = '<option value="">Select Subject</option>';
+
+            if (!classID) return;
+
+            try {
+                const response = await fetch(`/api/classes/${classID}`);
+                const classData = await response.json();
+
+                classData.subjects.forEach(subject => {
+                    const option = document.createElement('option');
+                    option.value = subject;
+                    option.textContent = subject;
+                    subjectSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading subjects:', error);
+            }
+        });
+
+        document.getElementById('assignmentForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                classID: document.getElementById('classSelect').value,
+                subject: document.getElementById('subjectSelect').value,
+                lecturer_id: document.getElementById('lecturerSelect').value
+            };
+
+            try {
+                const response = await fetch('/api/subject-assignments', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+                alert(result.message || result.error);
+            } catch (error) {
+                alert('Error assigning subject');
+            }
+        });
+
+        window.onload = loadData;
+    </script>
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Lecturer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        form {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        #selectedClasses {
+            list-style: none;
+            padding: 0;
+        }
+        #selectedClasses li {
+            background: #d1e7dd;
+            padding: 8px;
+            margin-top: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 5px;
+        }
+        #selectedClasses button {
+            background: red;
+            color: white;
+            border: none;
+            padding: 5px;
+            cursor: pointer;
+        }
+    </style>
+<script>
+    // Declare selectedClasses globally so that it can be accessed in the submitForm function
+    let selectedClasses = [];
+
+    async function loadClasses() {
+        try {
+            const response = await fetch("/api/classes");
+            const classes = await response.json();
+
+            const classDropdown = document.getElementById("classDropdown");
+            const selectedClassesList = document.getElementById("selectedClasses");
+            const selectedClassesInput = document.getElementById("selectedClassesInput");
+            const addClassBtn = document.getElementById("addClassBtn");
+
+            // Clear previous options
+            classDropdown.innerHTML = "";
+
+            classes.forEach(cls => {
+                const option = document.createElement("option");
+                option.value = cls.classID;
+                option.textContent = cls.classID;
+                classDropdown.appendChild(option);
+            });
+
+            // Add selected class to the list
+            if (!addClassBtn.hasAttribute('data-listener-added')) {
+                addClassBtn.addEventListener("click", function () {
+                    const selectedValue = classDropdown.value;
+
+                    if (selectedValue && !selectedClasses.includes(selectedValue)) {
+                        selectedClasses.push(selectedValue);
+
+                        // Update UI
+                        const listItem = document.createElement("li");
+                        listItem.textContent = selectedValue;
+
+                        const removeBtn = document.createElement("button");
+                        removeBtn.textContent = "Remove";
+                        removeBtn.onclick = function () {
+                            selectedClasses = selectedClasses.filter(cls => cls !== selectedValue);
+                            selectedClassesInput.value = JSON.stringify(selectedClasses);
+                            listItem.remove();
+                        };
+
+                        listItem.appendChild(removeBtn);
+                        selectedClassesList.appendChild(listItem);
+
+                        // Update the hidden input field with the selected classes
+                        selectedClassesInput.value = JSON.stringify(selectedClasses);
+                    }
+                });
+                addClassBtn.setAttribute('data-listener-added', 'true');
+            }
+        } catch (error) {
+            console.error("Error loading classes:", error);
+        }
+    }
+
+  async function submitForm(event) {
+      event.preventDefault();
+
+      const formData = {
+          name: document.getElementById("name").value,
+          username: document.getElementById("username").value,
+          password: document.getElementById("password").value,
+          classesTaught: selectedClasses  // Already an array, no need for JSON.stringify
+      };
+
+      try {
+          const response = await fetch("/api/add-lecturer", {
+              method: "POST",
+              headers: {
+                  "Content-Type": "application/json"
+              },
+              body: JSON.stringify(formData)
+          });
+
+          const result = await response.json();
+          if (result.message) {
+              alert(result.message);
+          } else if (result.error) {
+              alert(result.error);
+          }
+      } catch (error) {
+          alert("Server Error!");
+      }
+  }
+
+    window.onload = loadClasses;
+</script>
+</head>
+<body>
+    <h2>Add Lecturer</h2>
+    <form id="lecturerForm" onsubmit="submitForm(event)">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required>
+
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+
+        <label for="classDropdown">Select Class:</label>
+        <select id="classDropdown">
+            <option value="">-- Select a class --</option>
+        </select>
+        <button type="button" id="addClassBtn">Add Class</button>
+
+        <ul id="selectedClasses"></ul>
+
+        <input type="hidden" id="selectedClassesInput" name="classesTaught">
+
+        <button type="submit">Add Lecturer</button>
+    </form>
+</body>
+</html>

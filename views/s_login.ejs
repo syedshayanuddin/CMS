@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Login</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="logo-container">
+    <!-- Replace 'logo.png' with the path to your logo image -->
+    <img
+      src="https://play-lh.googleusercontent.com/WBg_1p45pBbDJnMB2Etw8GUrYo1eleZgeYzqr5d5Z5J-ROvve5JfXjHYNstD43fdGII"
+      alt="Logo"
+      class="logo"
+    />
+    </div>
+
+    <div action="/s-login" class="form-container">
+      <h2>Student Login</h2>
+      <form action="/login" method="post">
+        <div class="form-group">
+          <label for="name">Roll Number: </label>
+          <input
+            type="number"
+            id="rollnumber"
+            name="username"
+            placeholder="Enter your Roll Number"
+            required
+            autocomplete="off"
+          />
+        </div>
+        <div class="form-group">
+          <label for="password">Password:</label>
+          <input
+            type="password"
+            name="password"
+            id="password"
+            placeholder="Password"
+            required
+          />
+        </div>
+        <button type="submit" class="submit-btn">Login</button>
+      </form>
+      <p><a href="/l_login">Are you a Lecturer?</a></p>
+    </div>
+
+  <script>
+
+    document.querySelector("form").addEventListener("submit", function (event) {
+    event.preventDefault(); // Prevent default form submission
+
+    let rollNumber = document.getElementById("rollnumber").value;
+    let password = document.getElementById("password").value;
+
+    fetch("/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "rollNumber": rollNumber,
+        "password": password
+      },
+      body: JSON.stringify({ rollNumber: rollNumber, password: password }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          window.location.href = "/s_homepage/" + rollNumber; 
+        } else {
+          alert("Login failed");
+        }
+      });
+    });
+
+  </script>
+</body>
+</html>

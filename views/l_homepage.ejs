@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lecturer Homepage</title>
+    <style>
+        .top-section {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #ddd;
+            z-index: 100;
+        }
+        .content-section {
+            margin-top: 100px;
+            padding: 20px;
+        }
+        .attendance-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .attendance-table th, .attendance-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            margin: 15% auto;
+            padding: 20px;
+            width: 50%;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-section">
+        <button onclick="showAttendanceModal()">Mark Attendance</button>
+        <button onclick="showMarksSection()">Upload Marks</button>
+        <button onclick="showInsightsSection()">Get Insights</button>
+    </div>
+
+    <div class="content-section" id="mainContent"></div>
+
+    <div id="attendanceModal" class="modal">
+        <div class="modal-content">
+            <h3>Select Class and Date</h3>
+            <select id="classSelect">
+                <option value="">Select Class</option>
+            </select>
+            <input type="date" id="dateSelect">
+            <button onclick="loadAttendanceSection()">Submit</button>
+            <button onclick="document.getElementById('attendanceModal').style.display='none'">Close</button>
+        </div>
+    </div>
+
+    <script>
+        let lecturer = null;
+        let currentSubject = null;
+
+        async function loadLecturerData() {
+            const username = window.location.pathname.split('/')[2];
+            const response = await fetch(`/api/lecturer/${username}`);
+            lecturer = await response.json();
+            
+            const classSelect = document.getElementById('classSelect');
+            classSelect.innerHTML = '<option value="">Select Class</option>';
+            
+            lecturer.classesTaught.forEach(className => {
+                const option = document.createElement('option');
+                option.value = className;
+                option.textContent = className;
+                classSelect.appendChild(option);
+            });
+        }
+
+        function showAttendanceModal() {
+            const modal = document.getElementById('attendanceModal');
+            modal.style.display = 'block';
+            document.getElementById('dateSelect').valueAsDate = new Date();
+        }
+
+        async function loadAttendanceSection() {
+            const classID = document.getElementById('classSelect').value;
+            const date = document.getElementById('dateSelect').value;
+            
+            if (!classID || !date) {
+                alert('Please select both class and date');
+                return;
+            }
+
+            try {
+                const subjectResponse = await fetch(`/api/subject-assignments/find?classID=${classID}&lecturer_id=${lecturer.lecturer_id}`);
+                const subjectData = await subjectResponse.json();
+                if (!subjectData) {
+                    alert('No subject assignment found for this class');
+                    return;
+                }
+                currentSubject = subjectData.subject;
+
+                const scheduleResponse = await fetch(`/api/class/schedule?classID=${classID}&date=${date}&subject=${currentSubject}`);
+                const scheduleData = await scheduleResponse.json();
+                
+                if (!scheduleData.hours || scheduleData.hours.length === 0) {
+                    alert('No teaching hours found for this day');
+                    return;
+                }
+
+                const studentsResponse = await fetch(`/api/students/${classID}`);
+                const students = await studentsResponse.json();
+
+                displayAttendanceForm(classID, date, scheduleData.hours, students);
+                document.getElementById('attendanceModal').style.display = 'none';
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error loading attendance section');
+            }
+        }
+
+        function displayAttendanceForm(classID, date, hours, students) {
+            const content = document.getElementById('mainContent');
+            let html = `
+                <h2>Mark Attendance</h2>
+                <p>Class: ${classID}</p>
+                <p>Date: ${date}</p>
+                <p>Subject: ${currentSubject}</p>
+                <p>Available Hours: ${hours.join(', ')}</p>
+                <form onsubmit="submitAttendance(event)">
+                    <input type="hidden" name="classID" value="${classID}">
+                    <input type="hidden" name="date" value="${date}">
+                    <select name="hour" required onchange="checkAttendanceStatus(event)">
+                        <option value="">Select Hour</option>
+                        ${hours.map(h => `<option value="${h}">${h}</option>`).join('')}
+                    </select>
+                    <div id="attendanceForm" style="display:none">
+                        <table class="attendance-table">
+                            <tr>
+                                <th>Roll Number</th>
+                                <th>Name</th>
+                                <th>Present</th>
+                            </tr>
+                            ${students.map(student => `
+                                <tr>
+                                    <td>${student.rollnumber}</td>
+                                    <td>${student.name}</td>
+                                    <td>
+                                        <input type="checkbox" name="present" value="${student.rollnumber}">
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </table>
+                        <button type="submit">Submit Attendance</button>
+                    </div>
+                </form>
+            `;
+            content.innerHTML = html;
+        }
+
+        async function checkAttendanceStatus(event) {
+            const hour = event.target.value;
+            const classID = document.querySelector('input[name="classID"]').value;
+            const date = document.querySelector('input[name="date"]').value;
+
+            const response = await fetch(`/api/attendance/check?classID=${classID}&date=${date}&hour=${hour}`);
+            const data = await response.json();
+
+            const attendanceForm = document.getElementById('attendanceForm');
+            if (data.updated) {
+                alert('Attendance already marked for this hour');
+                event.target.value = '';
+                attendanceForm.style.display = 'none';
+            } else {
+                attendanceForm.style.display = 'block';
+            }
+        }
+
+        async function submitAttendance(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const presentStudents = formData.getAll('present');
+            
+            const attendanceData = {
+                classID: formData.get('classID'),
+                date: formData.get('date'),
+                hour: formData.get('hour'),
+                subject: currentSubject,
+                lecturer_id: lecturer.lecturer_id,
+                student_data: []
+            };
+
+            const studentsResponse = await fetch(`/api/students/${attendanceData.classID}`);
+            const students = await studentsResponse.json();
+
+            students.forEach(student => {
+                attendanceData.student_data.push({
+                    rollnumber: student.rollnumber,
+                    isPresent: presentStudents.includes(student.rollnumber)
+                });
+            });
+
+            try {
+                const response = await fetch('/api/attendance/mark', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(attendanceData)
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    alert('Attendance marked successfully!');
+                    document.getElementById('mainContent').innerHTML = '';
+                } else {
+                    alert(result.error || 'Error marking attendance');
+                }
+            } catch (error) {
+                alert('Error submitting attendance');
+            }
+        }
+
+        window.onload = loadLecturerData;
+    </script>
+</body>
+</html>
