@@ -241,16 +241,6 @@ app.get('/api/students/:classID', async (req, res) => {
 });
 
 // Check if attendance is already marked
-// app.get('/api/attendance/check', async (req, res) => {
-//     const { classID, date, hour } = req.query;
-//     const attendance = await Attendance.findOne({
-//         classID,
-//         date: new Date(date),
-//         'hourWiseAttendance.hour': hour
-//     });
-//     res.json({ updated: !!attendance });
-// });
-
 app.get('/api/attendance/check', async (req, res) => {
     const { classID, date, hour } = req.query;
     const attendance = await Attendance.findOne({
@@ -267,41 +257,6 @@ app.get('/api/attendance/check', async (req, res) => {
 });
 
 // Mark attendance
-// app.post('/api/attendance/mark', async (req, res) => {
-//     try {
-//         const { classID, date, hour, subject, lecturer_id, student_data } = req.body;
-        
-//         let attendance = await Attendance.findOne({
-//             classID,
-//             date: new Date(date)
-//         });
-
-//         if (!attendance) {
-//             attendance = new Attendance({
-//                 classID,
-//                 day: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][new Date(date).getDay()],
-//                 date: new Date(date),
-//                 hourWiseAttendance: [],
-//                 totalHours: 0
-//             });
-//         }
-
-//         attendance.hourWiseAttendance.push({
-//             hour,
-//             updated: true,
-//             subject,
-//             lecturer_id,
-//             student_data
-//         });
-//         attendance.totalHours = attendance.hourWiseAttendance.length;
-
-//         await attendance.save();
-//         res.json({ success: true });
-//     } catch (error) {
-//         res.status(500).json({ success: false, error: error.message });
-//     }
-// });
-
 app.post('/api/attendance/mark', async (req, res) => {
     try {
         const { classID, date, hour, subject, lecturer_id, student_data } = req.body;
@@ -367,6 +322,12 @@ app.get('/api/lecturer/:username', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+
+// --------- Subsection: Route for Marks Handling ------------
+
+// ------------------------------------------------
+// --------- STUDENT DASHBOARD ROUTES ------------
+// ------------------------------------------------
 
 // ------------------------------------------------
 // ---------- ROUTES FOR LOGGING IN ---------------
