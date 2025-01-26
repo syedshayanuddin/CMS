@@ -25,24 +25,33 @@
     <div id="attendanceModal" class="modal">
         <div class="modal-content">
             <h3>Select Class and Date</h3>
-            <select id="classSelect">
-                <option value="">Select Class</option>
-            </select>
-            <input type="date" id="dateSelect">
-            <button onclick="loadAttendanceSection()">Submit</button>
-            <button onclick="document.getElementById('attendanceModal').style.display='none'">Close</button>
+            <div class="modal-form-row">
+                <select id="classSelect">
+                    <option value="">Select Class</option>
+                </select>
+                <input type="date" id="dateSelect">
+            </div>
+            <div class="modal-buttons">
+                <button onclick="loadAttendanceSection()">Submit</button>
+                <button onclick="document.getElementById('attendanceModal').style.display='none'">Close</button>
+            </div>
         </div>
     </div>
+
     <div id="marksModal" class="modal">
-    <div class="modal-content">
-        <h3>Select Class</h3>
-        <select id="marksClassSelect">
-            <option value="">Select Class</option>
-        </select>
-        <button onclick="loadMarksSection()">Submit</button>
-        <button onclick="document.getElementById('marksModal').style.display='none'">Close</button>
+        <div class="modal-content">
+            <h3>Select Class</h3>
+            <div class="modal-form-row single-input">
+                <select id="marksClassSelect">
+                    <option value="">Select Class</option>
+                </select>
+            </div>
+            <div class="modal-buttons">
+                <button onclick="loadMarksSection()">Submit</button>
+                <button onclick="document.getElementById('marksModal').style.display='none'">Close</button>
+            </div>
+        </div>
     </div>
-</div>
 <!------------------------------------------------>
 <!--------------- SCRIPT SECTION------------------>
 <!------------------------------------------------>
