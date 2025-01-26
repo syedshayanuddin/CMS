@@ -545,6 +545,45 @@ app.get('/s_homepage/:rollNumber', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+
+
+app.get('/api/student-marks/:rollNumber', async (req, res) => {
+    try {
+        const rollNumber = req.params.rollNumber;
+        
+        // Find the student
+        const student = await Student.findOne({ rollnumber: rollNumber });
+        if (!student) {
+            return res.status(404).json({ error: "Student not found" });
+        }
+
+        // Find marks for the student
+        const marksRecord = await Marks.findOne({ student: student._id });
+        
+        // If no marks record exists, return empty marks
+        if (!marksRecord) {
+            return res.json({ marks: [] });
+        }
+
+        // Get class details to match subjects
+        const classDetails = await Class.findOne({ classID: student.class });
+        
+        // Prepare marks data with additional context
+        const marksData = marksRecord.marks.map(markEntry => {
+            return {
+                subject: markEntry.subject,
+                CIE1: markEntry.CIE1,
+                CIE2: markEntry.CIE2,
+                Assignment: markEntry.Assignment,
+                totalMarks: markEntry.CIE1 + markEntry.CIE2 + markEntry.Assignment
+            };
+        });
+
+        res.json({ marks: marksData });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
   
 
 // ------------------------------------------------

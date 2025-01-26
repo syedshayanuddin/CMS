@@ -123,6 +123,60 @@ body {
         justify-content: center;
         margin-top: 10px;
     }
+
+
+    /* Marks Section Styles */
+    .marks-grid {
+        display: list-item;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 15px;
+    }
+    .marks-card {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        overflow: hidden;
+        transition: transform 0.3s ease;
+    }
+    .marks-card:hover {
+        transform: scale(1.05);
+    }
+    .marks-card-header {
+        background-color: #6059d7;
+        color: white;
+        padding: 10px;
+        text-align: center;
+        font-weight: bold;
+    }
+    .marks-card-body {
+        padding: 15px;
+    }
+    .marks-breakdown {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
+    .marks-breakdown-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .marks-breakdown-label {
+        font-size: 0.8em;
+        color: #666;
+        margin-bottom: 5px;
+    }
+    .marks-breakdown-value {
+        font-weight: bold;
+        font-size: 1.1em;
+    }
+    .total-marks {
+        text-align: center;
+        background-color: #f0f0f0;
+        padding: 10px;
+        border-top: 1px solid #ddd;
+    }
    
   </style>
 
@@ -160,13 +214,16 @@ body {
 
       <!-- Marks Content Section -->
       <div id="marks" class="content-section">
-        <p>Marks content will be displayed here</p>
-      </div>
-
-      <!-- Insights Content Section -->
-      <div id="insights" class="content-section">
-        <p>Insights content will be displayed here</p>
-      </div>
+        <div id="marksContainer">
+            <p>Loading marks...</p>
+        </div>
+    </div>
+    
+    <!-- Modify the Insights Content Section -->
+    <div id="insights" class="content-section">
+        <div id="subjectInsightsContainer">
+            <p>Loading insights...</p>
+        </div>
     </div>
 
     <!-- JavaScript for Tab Switching and Progress Ring -->
@@ -349,6 +406,143 @@ function getProgressColor(percentage) {
 
 // Add event listener for insights tab
 document.querySelector('.tab-btn[data-target="insights"]').addEventListener('click', fetchSubjectAttendance);
+
+
+async function fetchMarks() {
+        const marksContainer = document.getElementById('marksContainer');
+        const rollNumber = '<%= student.rollnumber %>';
+
+        try {
+            const response = await fetch(`/api/student-marks/${rollNumber}`);
+            const data = await response.json();
+
+            if (data.marks.length === 0) {
+                marksContainer.innerHTML = '<p>No marks available</p>';
+                return;
+            }
+
+            marksContainer.innerHTML = `
+                <h3>Subject Marks</h3>
+                <div class="marks-grid">
+                    ${data.marks.map(subject => {
+                        // Calculate average of CIE1 and CIE2, then add Assignment
+                        const avgCIE = ((subject.CIE1 + subject.CIE2) / 2).toFixed(1);
+                        const totalMarks = (parseFloat(avgCIE) + subject.Assignment).toFixed(1);
+                        
+                        return `
+                        <div class="marks-card">
+                            <div class="marks-card-header">${subject.subject}</div>
+                            <div class="marks-card-body">
+                                <div class="marks-breakdown">
+                                    <div class="marks-breakdown-item">
+                                        <div class="marks-breakdown-label">CIE-1</div>
+                                        <div class="marks-breakdown-value">${subject.CIE1}</div>
+                                    </div>
+                                    <div class="marks-breakdown-item">
+                                        <div class="marks-breakdown-label">CIE-2</div>
+                                        <div class="marks-breakdown-value">${subject.CIE2}</div>
+                                    </div>
+                                    <div class="marks-breakdown-item">
+                                        <div class="marks-breakdown-label">Assignment</div>
+                                        <div class="marks-breakdown-value">${subject.Assignment}</div>
+                                    </div>
+                                </div>
+                                <div class="marks-breakdown">
+                                    <div class="marks-breakdown-item" style="width:100%">
+                                        <div class="marks-breakdown-label">Avg CIE</div>
+                                        <div class="marks-breakdown-value">${avgCIE}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="total-marks">
+                                Total Marks: ${totalMarks}
+                            </div>
+                        </div>
+                    `}).join('')}
+                </div>
+            `;
+        } catch (error) {
+            marksContainer.innerHTML = `<p>Error fetching marks: ${error.message}</p>`;
+        }
+    }
+
+    // async function fetchAttendanceMarksInsights() {
+    //     const insightsContainer = document.getElementById('subjectInsightsContainer');
+    //     const rollNumber = '<%= student.rollnumber %>';
+
+    //     try {
+    //         const [attendanceResponse, marksResponse] = await Promise.all([
+    //             fetch(`/api/student-subject-attendance/${rollNumber}`),
+    //             fetch(`/api/student-marks/${rollNumber}`)
+    //         ]);
+
+    //         const attendanceData = await attendanceResponse.json();
+    //         const marksData = await marksResponse.json();
+
+    //         // Combine data with advanced correlation
+    //         const combinedInsights = attendanceData.map(attendanceSubject => {
+    //             const marksSubject = marksData.marks.find(m => m.subject === attendanceSubject.subject);
+                
+    //             // Calculate average CIE and total marks
+    //             const avgCIE = marksSubject 
+    //                 ? ((marksSubject.CIE1 + marksSubject.CIE2) / 2).toFixed(1)
+    //                 : 0;
+    //             const totalMarks = marksSubject 
+    //                 ? (parseFloat(avgCIE) + marksSubject.Assignment).toFixed(1)
+    //                 : 0;
+
+    //             // Calculate correlation score
+    //             const correlationScore = calculateCorrelationScore(
+    //                 attendanceSubject.attendancePercentage, 
+    //                 parseFloat(totalMarks)
+    //             );
+
+    //             return {
+    //                 subject: attendanceSubject.subject,
+    //                 lecturer: attendanceSubject.lecturer,
+    //                 attendancePercentage: parseFloat(attendanceSubject.attendancePercentage),
+    //                 totalMarks: parseFloat(totalMarks),
+    //                 correlationScore: correlationScore
+    //             };
+    //         });
+
+    //         insightsContainer.innerHTML = `
+    //             <h3>Attendance vs Marks Insights</h3>
+    //             <div class="attendance-marks-insights">
+    //                 ${combinedInsights.map(insight => `
+    //                     <div class="correlation-card">
+    //                         <h4>${insight.subject}</h4>
+    //                         <p>Lecturer: ${insight.lecturer}</p>
+    //                         <div class="insight-details">
+    //                             <div class="insight-item">
+    //                                 <strong>Attendance:</strong>
+    //                                 <p style="color: ${getAttendanceColor(insight.attendancePercentage)}">
+    //                                     ${insight.attendancePercentage.toFixed(2)}%
+    //                                 </p>
+    //                             </div>
+    //                             <div class="insight-item">
+    //                                 <strong>Total Marks:</strong>
+    //                                 <p>${insight.totalMarks}</p>
+    //                             </div>
+    //                             <div class="insight-item">
+    //                                 <strong>Correlation:</strong>
+    //                                 <p>${getCorrelationDescription(insight.correlationScore)}</p>
+    //                             </div>
+    //                         </div>
+    //                     </div>
+    //                 `).join('')}
+    //             </div>
+    //         `;
+    //     } catch (error) {
+    //         insightsContainer.innerHTML = `<p>Error fetching insights: ${error.message}</p>`;
+    //     }
+    // }
+
+    // Add event listeners for marks and insights tabs
+    document.querySelector('.tab-btn[data-target="marks"]').addEventListener('click', fetchMarks);
+    document.querySelector('.tab-btn[data-target="insights"]').addEventListener('click', () => {
+        fetchSubjectAttendance();    });
+
 
 
 
