@@ -2,206 +2,7 @@
 <html>
 <head>
     <title>Lecturer Homepage</title>
-    <!-- <link rel="stylesheet" href="/l_style.css"> -->
-<style>
-
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-        }
-
-        .navbar {
-            background: #1a237e;
-            color: white;
-            padding: 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: fixed;
-            width: 99%;
-            top: 0;
-            z-index: 1000;
-        }
-
-        .top-section {
-            position: fixed;
-            top: 100px;
-            width: 100%;
-            padding: 1rem;
-            background: #f8f9fa;
-            border-bottom: 1px solid #ddd;
-            z-index: 100;
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-        }
-
-        .content-section {
-            margin-top: 140px;
-            padding: 2rem;
-            max-width: 1200px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .btn {
-            background-color: #3f51b5;
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 0.375rem;
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        .btn:hover {
-            background-color: #283593;
-        }
-
-        .logout-btn {
-            background-color: #f44336;
-        }
-
-        .logout-btn:hover {
-            background-color: #d32f2f;
-        }
-
-        .attendance-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .attendance-table th {
-            background: #3f51b5;
-            color: white;
-            font-weight: 500;
-            text-align: left;
-            padding: 12px;
-        }
-
-        .attendance-table td {
-            padding: 12px;
-            border-bottom: 1px solid #e0e0e0;
-        }
-
-        .attendance-table tr:hover {
-            background-color: #f5f5f5;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-        }
-
-        .modal-content {
-            background: white;
-            margin: 15% auto;
-            padding: 2rem;
-            width: 50%;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        input[type="number"], select, input[type="date"] {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            margin: 8px 0;
-        }
-
-        input[type="number"] {
-            width: 80px;
-        }
-
-        .form-header {
-            background: #f8f9fa;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            border-radius: 4px;
-        }
-
-        /* BUTTONS */
-        .top-section button {
-            background-color: #4CAF50;
-            color: white;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            margin: 0 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-        }
-
-        .top-section button:hover {
-            background-color: #45a049;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-
-        .top-section button:active {
-            transform: translateY(0);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .modal-content button {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin: 10px 5px;
-            transition: background-color 0.3s;
-        }
-
-        .modal-content button:hover {
-            background-color: #45a049;
-        }
-
-        .modal-content button:last-child {
-            background-color: #f44336;
-        }
-
-        .modal-content button:last-child:hover {
-            background-color: #d32f2f;
-        }
-
-        form button[type="submit"] {
-            background-color: #4CAF50;
-            color: white;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin: 20px 0;
-            font-size: 16px;
-            width: auto;
-            display: block;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-        }
-
-        form button[type="submit"]:hover {
-            background-color: #45a049;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-    </style>
+    <link rel="stylesheet" href="/l_style.css">
 </head>
 <body class="bg-gray-100">
 <!------------------------------------------------>
@@ -213,6 +14,7 @@
     </div>
 
     <div class="top-section">
+        <button onclick="goToHomepage()">Homepage</button>
         <button onclick="showAttendanceModal()">Mark Attendance</button>
         <button onclick="showMarksSection()">Upload Marks</button>
         <button onclick="showInsightsSection()">Get Insights</button>
@@ -246,6 +48,85 @@
 <!------------------------------------------------>
 <script>
     // ------------------------------------------------
+    // ------------- HOMEPAGE SECTION -----------------
+    // ------------------------------------------------
+
+    let isViewingTimetable = true;
+
+    function goToHomepage() {
+    isViewingTimetable = true;
+    location.reload();
+}
+    async function displayTimetable() {
+        if (!isViewingTimetable) return;
+        const today = new Date().getDay(); // 0 is Sunday, 1 is Monday, etc.
+        const days = ['MON', 'TUE', 'WED', 'THUR', 'FRI', 'SAT'];
+        
+        let timetableHTML = `
+            <h2 class="schedule-title">Your Schedule</h2>
+            <table class="timetable">
+                <tr>
+                    <th>Day</th>
+                    <th>Hour 1</th>
+                    <th>Hour 2</th>
+                    <th>Hour 3</th>
+                    <th>Hour 4</th>
+                    <th>Lunch</th>
+                    <th>Hour 5</th>
+                    <th>Hour 6</th>
+                </tr>
+        `;
+
+        for(let dayIndex = 0; dayIndex < days.length; dayIndex++) {
+            const classSchedules = {};
+            
+            // Get schedules for each class taught by lecturer
+            for(const classID of lecturer.classesTaught) {
+                const response = await fetch(`/api/class/schedule/${classID}`);
+                const schedule = await response.json();
+                classSchedules[classID] = schedule;
+            }
+
+            // Check if it's current day (today)
+            const isCurrentDay = dayIndex +1  === today;
+            
+            timetableHTML += `
+                <tr class="${isCurrentDay ? 'current-day' : ''}">
+                    <td><strong>${days[dayIndex]}</strong></td>
+            `;
+
+            // Add 6 time slots
+            for(let hour = 1; hour <= 7; hour++) {
+                if(hour === 5) {
+                    timetableHTML += `<td class="lunch-break"></td>`;
+                    continue;
+                }
+
+                let hourText = '';
+                // Check each class's schedule for this day and hour
+                for(const classID in classSchedules) {
+                    const daySchedule = classSchedules[classID].timeTable[dayIndex];
+                    if(daySchedule && daySchedule.hours[hour] && await isLecturerSubject(classID, daySchedule.hours[hour])) {
+                        hourText = `${classID}<br>${daySchedule.hours[hour]}`;
+                        break;
+                    }
+                }
+                timetableHTML += `<td>${hourText}</td>`;
+            }
+            timetableHTML += '</tr>';
+        }
+        timetableHTML += '</table>';
+
+        document.getElementById('mainContent').innerHTML = timetableHTML;
+    }
+
+    async function isLecturerSubject(classID, subject) {
+        const response = await fetch(`/api/subject-assignments/find?classID=${classID}&lecturer_id=${lecturer.lecturer_id}`);
+        const assignment = await response.json();
+        return assignment && assignment.subject === subject;
+    }
+
+    // ------------------------------------------------
     // ------------- ATTENDANCE SECTION ---------------
     // ------------------------------------------------
     let lecturer = null;
@@ -257,7 +138,7 @@
         lecturer = await response.json();
 
         // Update lecturer name in navbar
-     document.getElementById('lecturerName').textContent = lecturer.name;
+        document.getElementById('lecturerName').textContent = lecturer.name;
         
         const classSelect = document.getElementById('classSelect');
         classSelect.innerHTML = '<option value="">Select Class</option>';
@@ -418,6 +299,7 @@
     // ------------- MARKS SECTION --------------------
     // ------------------------------------------------
     function showMarksSection() {
+
         const modal = document.getElementById('marksModal');
         modal.style.display = 'block';
         
@@ -464,7 +346,8 @@
         const content = document.getElementById('mainContent');
         students.sort((a, b) => a.rollnumber - b.rollnumber);
         let html = `
-            <h2>Upload Marks - ${subject}</h2>
+            <h2>Class: ${classID}</h2>
+            <h2>Subject: ${subject}</h2>
             <form id="marksForm" onsubmit="saveMarks(event)">
                 <table class="attendance-table">
                     <tr>
@@ -540,9 +423,207 @@
             alert('Error saving marks');
         }
     }
+    // ------------------------------------------------
+    // ------------- INSIGHTS SECTION -----------------
+    // ------------------------------------------------
+        async function showInsightsSection() {
+            const content = document.getElementById('mainContent');
+            let generalInfo = await getGeneralInfo();
+            
+            content.innerHTML = `
+                <h2>Your Teaching Profile</h2>
+                <div class="info-section">
+                    ${generalInfo}
+                    <div class="action-buttons">
+                        <button onclick="getGeneralAnalysis()" class="analysis-btn">Get General Analysis</button>
+                        <select id="classInsightSelect" onchange="getClassSpecificInsights(this.value)">
+                            <option value="">Select Class for Detailed Analysis</option>
+                            ${lecturer.classesTaught.map(cls => 
+                                `<option value="${cls}">${cls}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div id="analysisContent"></div>
+                </div>
+            `;
+        }
 
+        async function getGeneralInfo() {
+            let html = '<div class="classes-info">';
+            
+            for(const classID of lecturer.classesTaught) {
+                const subjectRes = await fetch(`/api/subject-assignments/find?classID=${classID}&lecturer_id=${lecturer.lecturer_id}`);
+                const subjectData = await subjectRes.json();
+                
+                html += `
+                    <div class="class-card">
+                        <h3>Class: ${classID}</h3>
+                        <p>Subject: ${subjectData.subject}</p>
+                    </div>
+                `;
+            }
+            
+            return html + '</div>';
+        }
 
-    window.onload = loadLecturerData;
+        async function getGeneralAnalysis() {
+            try {
+                const response = await fetch(`/api/insights/general/${lecturer.lecturer_id}`);
+                const insights = await response.json();
+                
+                if (!insights || insights.length === 0) {
+                    document.getElementById('analysisContent').innerHTML = '<p>No data available for analysis</p>';
+                    return;
+                }
+
+                const analysisContent = document.getElementById('analysisContent');
+                analysisContent.innerHTML = `
+                    <h3>Attendance Overview</h3>
+                    <table class="attendance-table">
+                        <tr>
+                            <th>S.No</th>
+                            <th>Class</th>
+                            <th>Subject</th>
+                            <th>Total Hours</th>
+                            <th>Total Students</th>
+                            <th>Total Presentees</th>
+                            <th>Avg Presentees</th>
+                            <th>Presentee %</th>
+                        </tr>
+                        ${insights.map((insight, index) => `
+                            <tr>
+                                <td>${index + 1}</td>
+                                <td>${insight.classID}</td>
+                                <td>${insight.subject || 'N/A'}</td>
+                                <td>${insight.totalHours || 0}</td>
+                                <td>${insight.totalStudents || 0}</td>
+                                <td>${insight.totalPresentees || 0}</td>
+                                <td>${(insight.avgPresentees || 0).toFixed(2)}</td>
+                                <td>${(insight.presenteePercentage || 0).toFixed(2)}%</td>
+                            </tr>
+                        `).join('')}
+                    </table>
+
+                    <h3>Marks Overview</h3>
+                    <table class="attendance-table">
+                        <tr>
+                            <th>S.No</th>
+                            <th>Class</th>
+                            <th>Subject</th>
+                            <th>Total Students</th>
+                            <th>Students < 40% (CIE1)</th>
+                            <th>Students < 40% (CIE2)</th>
+                            <th>Students < 40% (Overall)</th>
+                            <th>% Students < 40% (Overall)</th>
+                        </tr>
+                        ${insights.map((insight, index) => `
+                            <tr>
+                                <td>${index + 1}</td>
+                                <td>${insight.classID}</td>
+                                <td>${insight.subject || 'N/A'}</td>
+                                <td>${insight.totalStudents || 0}</td>
+                                <td>${insight.belowFortyCount?.CIE1 || 0}</td>
+                                <td>${insight.belowFortyCount?.CIE2 || 0}</td>
+                                <td>${insight.belowFortyCount?.Overall || 0}</td>
+                                <td>${(insight.belowFortyCount?.Percentage || 0).toFixed(2)}%</td>
+                            </tr>
+                        `).join('')}
+                    </table>
+                `;
+            } catch (error) {
+                console.error('Error fetching insights:', error);
+                document.getElementById('analysisContent').innerHTML = '<p>Error loading analysis data</p>';
+            }
+        }
+
+        async function getClassSpecificInsights(classID) {
+            if (!classID) return;
+            
+            const response = await fetch(`/api/insights/class/${classID}/${lecturer.lecturer_id}`);
+            const data = await response.json();
+            
+            const analysisContent = document.getElementById('analysisContent');
+            analysisContent.innerHTML = `
+                <div class="class-info">
+                    <p><strong>Class:</strong> ${data.classInfo.className}</p>
+                    <p><strong>Subject:</strong> ${data.classInfo.subject}</p>
+                    <p><strong>Total Hours Taken:</strong> ${data.classInfo.totalHours}</p>
+                    <p><strong>Hours Assigned per Week:</strong> ${data.classInfo.weeklyHours}</p>
+                </div>
+
+                <h3>Attendance Details</h3>
+                <table class="attendance-table">
+                    <tr>
+                        <th>S.No</th>
+                        <th>Roll No</th>
+                        <th>Name</th>
+                        <th>Classes Attended</th>
+                        <th>Attendance %</th>
+                    </tr>
+                    ${data.studentData.map((student, index) => `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${student.rollnumber}</td>
+                            <td>${student.name}</td>
+                            <td>${student.attendedClasses}</td>
+                            <td>${student.attendancePercentage.toFixed(2)}%</td>
+                        </tr>
+                    `).join('')}
+                </table>
+
+                <h3>Marks Details</h3>
+                <table class="attendance-table" id="marksTable">
+                    <tr>
+                        <th>S.No</th>
+                        <th>Roll No</th>
+                        <th>Name</th>
+                        <th onclick="sortTable('CIE1')" style="cursor:pointer">CIE1 ↕</th>
+                        <th onclick="sortTable('CIE2')" style="cursor:pointer">CIE2 ↕</th>
+                        <th onclick="sortTable('Assignment')" style="cursor:pointer">Assignment ↕</th>
+                        <th onclick="sortTable('Total')" style="cursor:pointer">Total ↕</th>
+                    </tr>
+                    ${data.studentData.map((student, index) => `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${student.rollnumber}</td>
+                            <td>${student.name}</td>
+                            <td>${student.marks.CIE1}</td>
+                            <td>${student.marks.CIE2}</td>
+                            <td>${student.marks.Assignment}</td>
+                            <td>${((student.marks.CIE1 + student.marks.CIE2) / 2 + student.marks.Assignment).toFixed(2)}</td>
+                        </tr>
+                    `).join('')}
+                </table>
+            `;
+        }
+
+        function sortTable(column) {
+            const table = document.getElementById('marksTable');
+            const rows = Array.from(table.querySelectorAll('tr:not(:first-child)'));
+            const columnIndex = {
+                'CIE1': 3,
+                'CIE2': 4,
+                'Assignment': 5,
+                'Total': 6
+            }[column];
+
+            rows.sort((a, b) => {
+                const aVal = Number(a.cells[columnIndex].textContent);
+                const bVal = Number(b.cells[columnIndex].textContent);
+                return bVal - aVal;
+            });
+
+            rows.forEach(row => table.appendChild(row));
+        }
+
+    async function initializePage() {
+    await loadLecturerData();
+    if (isViewingTimetable) {
+        await displayTimetable();
+    }
+}
+
+window.onload = initializePage;
 </script>
 </body>
 </html>
