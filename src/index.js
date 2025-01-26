@@ -208,6 +208,20 @@ app.get("/api/classes/:classID", async (req, res) => {
 // ------------------------------------------------
 // --------- LECTURER DASHBOARD ROUTES ------------
 // ------------------------------------------------
+
+// Used in loading timetable
+app.get('/api/class/schedule/:classID', async (req, res) => {
+    try {
+        const classDoc = await Class.findOne({ classID: req.params.classID });
+        if (!classDoc) {
+            return res.status(404).json({ error: "Class not found" });
+        }
+        res.json(classDoc);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Get subject assignment for lecturer and class
 app.get('/api/subject-assignments/find', async (req, res) => {
     const { classID, lecturer_id } = req.query;
@@ -396,8 +410,137 @@ app.post('/api/marks/update', async (req, res) => {
     }
 });
 
+// --------- Subsection: Route for Insights ------------
+app.get('/api/insights/general/:lecturer_id', async (req, res) => {
+    try {
+        const lecturer = await Lecturer.findOne({ lecturer_id: req.params.lecturer_id });
+        let insights = [];
+        
+        for(const classID of lecturer.classesTaught) {
+            const subject = await SubjectAssignment.findOne({ 
+                classID, 
+                lecturer_id: lecturer.lecturer_id 
+            });
+            
+            const attendance = await Attendance.find({
+                classID,
+                'hourWiseAttendance': {
+                    $elemMatch: {
+                        lecturer_id: lecturer.lecturer_id.toString(),
+                        subject: subject.subject
+                    }
+                }
+            });
+            
+            const students = await Student.find({ class: classID });
+            const marks = await Marks.find({
+                'student': { $in: students.map(s => s._id) },
+                'marks.subject': subject.subject
+            });
 
+            const totalHours = attendance.reduce((sum, att) => 
+                sum + att.hourWiseAttendance.filter(h => 
+                    h.lecturer_id === lecturer.lecturer_id.toString() && 
+                    h.subject === subject.subject
+                ).length, 0);
 
+            const totalPresentees = attendance.reduce((sum, att) => 
+                sum + att.hourWiseAttendance.reduce((s, h) => 
+                    s + (h.lecturer_id === lecturer.lecturer_id.toString() && 
+                         h.subject === subject.subject ? 
+                         h.student_data.filter(sd => sd.isPresent).length : 0), 0
+                ), 0);
+
+            const studentsBelow40 = marks.filter(m => {
+                const subjectMarks = m.marks.find(mk => mk.subject === subject.subject);
+                const total = ((subjectMarks.CIE1 + subjectMarks.CIE2) / 2) + subjectMarks.Assignment;
+                return (total / 30) * 100 < 40;
+            }).length;
+
+            insights.push({
+                classID,
+                subject: subject.subject,
+                totalHours,
+                totalStudents: students.length,
+                totalPresentees,
+                avgPresentees: totalPresentees / totalHours,
+                presenteePercentage: (totalPresentees / (totalHours * students.length)) * 100,
+                belowFortyCount: {
+                    CIE1: marks.filter(m => (m.marks.find(mk => 
+                        mk.subject === subject.subject).CIE1 / 50) * 100 < 40).length,
+                    CIE2: marks.filter(m => (m.marks.find(mk => 
+                        mk.subject === subject.subject).CIE2 / 50) * 100 < 40).length,
+                    Overall: studentsBelow40,
+                    Percentage: (studentsBelow40 / students.length) * 100
+                }
+            });
+        }
+        
+        res.json(insights);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/api/insights/class/:classID/:lecturer_id', async (req, res) => {
+    try {
+        const { classID, lecturer_id } = req.params;
+        
+        const subject = await SubjectAssignment.findOne({ classID, lecturer_id });
+        const attendance = await Attendance.find({
+            classID,
+            'hourWiseAttendance.lecturer_id': lecturer_id
+        });
+        
+        const students = await Student.find({ class: classID }).sort('rollnumber');
+        const marks = await Marks.find({
+            'student': { $in: students.map(s => s._id) },
+            'marks.subject': subject.subject
+        });
+
+        const totalHours = attendance.reduce((sum, att) => 
+            sum + att.hourWiseAttendance.filter(h => 
+                h.lecturer_id === lecturer_id
+            ).length, 0);
+
+        const studentAttendance = students.map(student => {
+            const attended = attendance.reduce((sum, att) => 
+                sum + att.hourWiseAttendance.filter(h => 
+                    h.student_data.find(sd => 
+                        sd.rollnumber === student.rollnumber && sd.isPresent
+                    )
+                ).length, 0);
+
+            const studentMarks = marks.find(m => 
+                m.student.toString() === student._id.toString()
+            )?.marks.find(m => m.subject === subject.subject) || {
+                CIE1: 0,
+                CIE2: 0,
+                Assignment: 0
+            };
+
+            return {
+                rollnumber: student.rollnumber,
+                name: student.name,
+                attendedClasses: attended,
+                attendancePercentage: (attended / totalHours) * 100,
+                marks: studentMarks
+            };
+        });
+
+        res.json({
+            classInfo: {
+                className: classID,
+                subject: subject.subject,
+                totalHours,
+                weeklyHours: 6 // Assuming 6 hours per week
+            },
+            studentData: studentAttendance
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
 
 // ------------------------------------------------
 // --------- STUDENT DASHBOARD ROUTES ------------
