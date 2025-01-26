@@ -127,11 +127,13 @@ body {
 
     /* Marks Section Styles */
     .marks-grid {
+        padding: 0px 400px;
         display: list-item;
         grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
         gap: 15px;
     }
     .marks-card {
+        margin-bottom: 30px;
         border: 1px solid #ddd;
         border-radius: 8px;
         background-color: #f9f9f9;
@@ -197,9 +199,9 @@ body {
       <!-- Student Info Section -->
       <div class="student-info">
         <h3> Student Information</h3>
-        <p>Name: <%= student.name %></p>
-        <p>Roll Number: <%= student.rollnumber %></p>
-        <p>Class: <%= student.class %></p>
+        <p><b>Name:</b> <%= student.name %></p>
+        <p><b>Roll Number:</b> <%= student.rollnumber %></p>
+        <p><b>Class:</b> <%= student.class %></p>
       </div>
       
       <!-- Menu Section -->
@@ -426,41 +428,43 @@ async function fetchMarks() {
         }
 
         marksContainer.innerHTML = `
-            <h3>Subject Marks</h3>
-            <div class="marks-grid">
-                ${data.marks.map(subject => {
-                    // Calculate average of CIE1 and CIE2, then add Assignment
-                    const avgCIE = ((subject.CIE1 + subject.CIE2) / 2).toFixed(1);
-                    const totalMarks = (parseFloat(avgCIE) + subject.Assignment).toFixed(1);
-                    
-                    return `
-                    <div class="marks-card">
-                        <div class="marks-card-header">${subject.subject}</div>
-                        <div class="marks-card-body">
-                            <div class="marks-breakdown">
-                                <div class="marks-breakdown-item">
-                                    <div class="marks-breakdown-label">CIE-1</div>
-                                    <div class="marks-breakdown-value">${subject.CIE1}</div>
-                                </div>
-                                <div class="marks-breakdown-item">
-                                    <div class="marks-breakdown-label">CIE-2</div>
-                                    <div class="marks-breakdown-value">${subject.CIE2}</div>
-                                </div>
-                                <div class="marks-breakdown-item">
-                                    <div class="marks-breakdown-label">Avg CIE</div>
-                                    <div class="marks-breakdown-value">${avgCIE}</div>
-                                </div>
-                                <div class="marks-breakdown-item">
-                                    <div class="marks-breakdown-label">Assignment</div>
-                                    <div class="marks-breakdown-value">${subject.Assignment}</div>
+            <div style="text-align: center;">
+                <h3>Subject Marks</h3>
+                <div class="marks-grid">
+                    ${data.marks.map(subject => {
+                        // Calculate average of CIE1 and CIE2, then add Assignment
+                        const avgCIE = ((subject.CIE1 + subject.CIE2) / 2).toFixed(1);
+                        const totalMarks = (parseFloat(avgCIE) + subject.Assignment).toFixed(1);
+                        
+                        return `
+                        <div class="marks-card">
+                            <div class="marks-card-header">${subject.subject}</div>
+                            <div class="marks-card-body">
+                                <div class="marks-breakdown">
+                                    <div class="marks-breakdown-item">
+                                        <div class="marks-breakdown-label">CIE-1</div>
+                                        <div class="marks-breakdown-value">${subject.CIE1}</div>
+                                    </div>
+                                    <div class="marks-breakdown-item">
+                                        <div class="marks-breakdown-label">CIE-2</div>
+                                        <div class="marks-breakdown-value">${subject.CIE2}</div>
+                                    </div>
+                                    <div class="marks-breakdown-item">
+                                        <div class="marks-breakdown-label">Avg CIE</div>
+                                        <div class="marks-breakdown-value">${avgCIE}</div>
+                                    </div>
+                                    <div class="marks-breakdown-item">
+                                        <div class="marks-breakdown-label">Assignment</div>
+                                        <div class="marks-breakdown-value">${subject.Assignment}</div>
+                                    </div>
                                 </div>
                             </div>
+                            <div class="total-marks">
+                                <b>Total Marks: ${totalMarks}</b>
+                            </div>
                         </div>
-                        <div class="total-marks">
-                            Total Marks: ${totalMarks}
-                        </div>
-                    </div>
-                `}).join('')}
+                    `}).join('')}
+                </div>
             </div>
         `;
     } catch (error) {
