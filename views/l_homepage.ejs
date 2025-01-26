@@ -88,7 +88,7 @@
             }
 
             // Check if it's current day (today)
-            const isCurrentDay = dayIndex + 1 === today;
+            const isCurrentDay = dayIndex +1  === today;
             
             timetableHTML += `
                 <tr class="${isCurrentDay ? 'current-day' : ''}">
@@ -511,10 +511,10 @@
                             <th>Class</th>
                             <th>Subject</th>
                             <th>Total Students</th>
-                            <th>Below 40% in CIE1</th>
-                            <th>Below 40% in CIE2</th>
-                            <th>Below 40% Overall</th>
-                            <th>% Below 40%</th>
+                            <th>Students < 40% (CIE1)</th>
+                            <th>Students < 40% (CIE2)</th>
+                            <th>Students < 40% (Overall)</th>
+                            <th>% Students < 40% (Overall)</th>
                         </tr>
                         ${insights.map((insight, index) => `
                             <tr>
