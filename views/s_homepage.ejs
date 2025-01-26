@@ -153,15 +153,19 @@ body {
         padding: 15px;
     }
     .marks-breakdown {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 10px;
-    }
-    .marks-breakdown-item {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+.marks-breakdown-item {
+    flex: 1;
+    min-width: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
     .marks-breakdown-label {
         font-size: 0.8em;
         color: #666;
@@ -409,62 +413,60 @@ document.querySelector('.tab-btn[data-target="insights"]').addEventListener('cli
 
 
 async function fetchMarks() {
-        const marksContainer = document.getElementById('marksContainer');
-        const rollNumber = '<%= student.rollnumber %>';
+    const marksContainer = document.getElementById('marksContainer');
+    const rollNumber = '<%= student.rollnumber %>';
 
-        try {
-            const response = await fetch(`/api/student-marks/${rollNumber}`);
-            const data = await response.json();
+    try {
+        const response = await fetch(`/api/student-marks/${rollNumber}`);
+        const data = await response.json();
 
-            if (data.marks.length === 0) {
-                marksContainer.innerHTML = '<p>No marks available</p>';
-                return;
-            }
+        if (data.marks.length === 0) {
+            marksContainer.innerHTML = '<p>No marks available</p>';
+            return;
+        }
 
-            marksContainer.innerHTML = `
-                <h3>Subject Marks</h3>
-                <div class="marks-grid">
-                    ${data.marks.map(subject => {
-                        // Calculate average of CIE1 and CIE2, then add Assignment
-                        const avgCIE = ((subject.CIE1 + subject.CIE2) / 2).toFixed(1);
-                        const totalMarks = (parseFloat(avgCIE) + subject.Assignment).toFixed(1);
-                        
-                        return `
-                        <div class="marks-card">
-                            <div class="marks-card-header">${subject.subject}</div>
-                            <div class="marks-card-body">
-                                <div class="marks-breakdown">
-                                    <div class="marks-breakdown-item">
-                                        <div class="marks-breakdown-label">CIE-1</div>
-                                        <div class="marks-breakdown-value">${subject.CIE1}</div>
-                                    </div>
-                                    <div class="marks-breakdown-item">
-                                        <div class="marks-breakdown-label">CIE-2</div>
-                                        <div class="marks-breakdown-value">${subject.CIE2}</div>
-                                    </div>
-                                    <div class="marks-breakdown-item">
-                                        <div class="marks-breakdown-label">Assignment</div>
-                                        <div class="marks-breakdown-value">${subject.Assignment}</div>
-                                    </div>
+        marksContainer.innerHTML = `
+            <h3>Subject Marks</h3>
+            <div class="marks-grid">
+                ${data.marks.map(subject => {
+                    // Calculate average of CIE1 and CIE2, then add Assignment
+                    const avgCIE = ((subject.CIE1 + subject.CIE2) / 2).toFixed(1);
+                    const totalMarks = (parseFloat(avgCIE) + subject.Assignment).toFixed(1);
+                    
+                    return `
+                    <div class="marks-card">
+                        <div class="marks-card-header">${subject.subject}</div>
+                        <div class="marks-card-body">
+                            <div class="marks-breakdown">
+                                <div class="marks-breakdown-item">
+                                    <div class="marks-breakdown-label">CIE-1</div>
+                                    <div class="marks-breakdown-value">${subject.CIE1}</div>
                                 </div>
-                                <div class="marks-breakdown">
-                                    <div class="marks-breakdown-item" style="width:100%">
-                                        <div class="marks-breakdown-label">Avg CIE</div>
-                                        <div class="marks-breakdown-value">${avgCIE}</div>
-                                    </div>
+                                <div class="marks-breakdown-item">
+                                    <div class="marks-breakdown-label">CIE-2</div>
+                                    <div class="marks-breakdown-value">${subject.CIE2}</div>
                                 </div>
-                            </div>
-                            <div class="total-marks">
-                                Total Marks: ${totalMarks}
+                                <div class="marks-breakdown-item">
+                                    <div class="marks-breakdown-label">Avg CIE</div>
+                                    <div class="marks-breakdown-value">${avgCIE}</div>
+                                </div>
+                                <div class="marks-breakdown-item">
+                                    <div class="marks-breakdown-label">Assignment</div>
+                                    <div class="marks-breakdown-value">${subject.Assignment}</div>
+                                </div>
                             </div>
                         </div>
-                    `}).join('')}
-                </div>
-            `;
-        } catch (error) {
-            marksContainer.innerHTML = `<p>Error fetching marks: ${error.message}</p>`;
-        }
+                        <div class="total-marks">
+                            Total Marks: ${totalMarks}
+                        </div>
+                    </div>
+                `}).join('')}
+            </div>
+        `;
+    } catch (error) {
+        marksContainer.innerHTML = `<p>Error fetching marks: ${error.message}</p>`;
     }
+}
 
     // async function fetchAttendanceMarksInsights() {
     //     const insightsContainer = document.getElementById('subjectInsightsContainer');
