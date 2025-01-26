@@ -3,24 +3,48 @@
 <head>
     <title>Lecturer Homepage</title>
     <link rel="stylesheet" href="/l_style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body class="bg-gray-100">
 <!------------------------------------------------>
 <!--------------- BODY SECTION-------------------->
 <!------------------------------------------------>
-    <div class="navbar">
-        <h2 class="text-xl font-semibold">Welcome <span id="lecturerName"></span></h2>
-        <button onclick="location.href='/l_login'" class="btn logout-btn">Logout</button>
-    </div>
+<div class="navbar">
+    <h2>Welcome <span id="lecturerName"></span></h2>
+</div>
 
-    <div class="top-section">
-        <button onclick="goToHomepage()">Homepage</button>
-        <button onclick="showAttendanceModal()">Mark Attendance</button>
-        <button onclick="showMarksSection()">Upload Marks</button>
-        <button onclick="showInsightsSection()">Get Insights</button>
+<div class="sidebar" id="sidebar">
+    <button class="toggle-sidebar" onclick="toggleSidebar()">
+    <span>Lecturer Dashboard</span>
+    <i class="fas fa-bars"></i>
+</button>
+    <div class="sidebar-buttons">
+        <button onclick="goToHomepage()">
+            <i class="fas fa-home"></i>
+            <span>Homepage</span>
+        </button>
+        <button onclick="showAttendanceModal()">
+            <i class="fas fa-clipboard-check"></i>
+            <span>Mark Attendance</span>
+        </button>
+        <button onclick="showMarksSection()">
+            <i class="fas fa-chart-bar"></i>
+            <span>Upload Marks</span>
+        </button>
+        <button onclick="showInsightsSection()">
+            <i class="fas fa-chart-line"></i>
+            <span>Get Insights</span>
+        </button>
     </div>
+    <div class="sidebar-bottom">
+        <button onclick="location.href='/l_login'" class="logout-btn">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Logout</span>
+        </button>
+    </div>
+</div>
 
-    <div class="content-section" id="mainContent"></div>
+<div class="content-section" id="mainContent"></div>
 
     <div id="attendanceModal" class="modal">
         <div class="modal-content">
@@ -59,6 +83,13 @@
     // ------------------------------------------------
     // ------------- HOMEPAGE SECTION -----------------
     // ------------------------------------------------
+
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const content = document.querySelector('.content-section');
+    sidebar.classList.toggle('sidebar-collapsed');
+    content.classList.toggle('content-section-full');
+}
 
     let isViewingTimetable = true;
 
@@ -446,7 +477,7 @@
                     <div class="action-buttons">
                         <button onclick="getGeneralAnalysis()" class="analysis-btn">Get General Analysis</button>
                         <select id="classInsightSelect" onchange="getClassSpecificInsights(this.value)">
-                            <option value="">Select Class for Detailed Analysis</option>
+                            <option value="">Select a Class</option>
                             ${lecturer.classesTaught.map(cls => 
                                 `<option value="${cls}">${cls}</option>`
                             ).join('')}
