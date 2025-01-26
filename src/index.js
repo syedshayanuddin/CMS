@@ -57,9 +57,9 @@ app.get(`/l_homepage/:username`, (req, res) => {
     res.render("l_homepage");
 });
 
-app.get(`/s_homepage/:rollNumber`, (req, res) => {
-    res.render("s_homepage");
-});
+// app.get(`/s_homepage/:rollNumber`, (req, res) => {
+//     res.render("s_homepage");
+// });
 
 
 // -------------------------------------------------------------
@@ -334,7 +334,149 @@ app.get('/api/lecturer/:username', async (req, res) => {
 // --------- STUDENT DASHBOARD ROUTES ------------
 // ------------------------------------------------
 
+app.get('/s_homepage/:rollNumber', async (req, res) => {
+    try {
+      const rollNumber = req.params.rollNumber;
+  
+      // Fetch student data from the database
+      const studentData = await Student.findOne({ rollnumber: rollNumber }); // Correct field name
+  
+      if (!studentData) {
+        return res.status(404).send('Student not found');
+      }
+  
+      // Render the s_homepage.ejs template with student data
+      res.render('s_homepage', { student: studentData }); // Pass the full object as 'student'
+    } catch (err) {
+      console.error(err);
+      res.status(500).send('Internal Server Error');
+    }
+  });
+  
+  app.get('/api/student-attendance/:rollNumber', async (req, res) => {
+    try {
+        const rollNumber = req.params.rollNumber;
+        
+        // Find all attendance records for the student's class
+        const attendanceRecords = await Attendance.find({
+            'hourWiseAttendance.student_data.rollnumber': rollNumber
+        });
 
+        // Calculate total hours and attended hours
+        let totalHours = 0;
+        let attendedHours = 0;
+
+        attendanceRecords.forEach(record => {
+            record.hourWiseAttendance.forEach(hourAttendance => {
+                const studentAttendance = hourAttendance.student_data.find(
+                    student => student.rollnumber === rollNumber
+                );
+
+                if (studentAttendance) {
+                    totalHours++;
+                    if (studentAttendance.isPresent) {
+                        attendedHours++;
+                    }
+                }
+            });
+        });
+
+        // Calculate percentage
+        const attendancePercentage = totalHours > 0 
+            ? ((attendedHours / totalHours) * 100).toFixed(2) 
+            : 0;
+
+        res.json({
+            totalHours,
+            attendedHours,
+            attendancePercentage,
+            attendanceRecords: attendanceRecords.map(record => ({
+                date: record.date,
+                hourWiseDetails: record.hourWiseAttendance.filter(
+                    hourAttendance => hourAttendance.student_data.some(
+                        student => student.rollnumber === rollNumber
+                    )
+                )
+            }))
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+  // Add this route to index.js
+  app.get('/api/student-subject-attendance/:rollNumber', async (req, res) => {
+    try {
+        const rollNumber = req.params.rollNumber;
+        
+        // Find student's class
+        const student = await Student.findOne({ rollnumber: rollNumber });
+        if (!student) {
+            return res.status(404).json({ error: "Student not found" });
+        }
+
+        // Get the class's subjects from the Class model
+        const classDetails = await Class.findOne({ classID: student.class });
+        if (!classDetails) {
+            return res.status(404).json({ error: "Class not found" });
+        }
+
+        // Prepare subject-wise attendance data
+        const subjectAttendance = [];
+
+        // Iterate through each subject in the class
+        for (let subject of classDetails.subjects) {
+            // Find subject assignments for this subject
+            const subjectAssignment = await SubjectAssignment.findOne({ 
+                classID: student.class,
+                subject: subject 
+            }).populate('lecturer_id', 'name');
+
+            // Find attendance records for this subject
+            const attendanceRecords = await Attendance.find({
+                'hourWiseAttendance.subject': subject,
+                'classID': student.class,
+                'hourWiseAttendance.student_data.rollnumber': rollNumber
+            });
+
+            let totalClasses = 0;
+            let attendedClasses = 0;
+
+            attendanceRecords.forEach(record => {
+                record.hourWiseAttendance.forEach(hourAttendance => {
+                    if (hourAttendance.subject === subject) {
+                        totalClasses++;
+                        const studentAttendance = hourAttendance.student_data.find(
+                            s => s.rollnumber === rollNumber
+                        );
+                        if (studentAttendance && studentAttendance.isPresent) {
+                            attendedClasses++;
+                        }
+                    }
+                });
+            });
+
+            // Only add subjects with assignments
+            if (subjectAssignment) {
+                subjectAttendance.push({
+                    subject: subject,
+                    lecturer: subjectAssignment.lecturer_name,
+                    totalClasses,
+                    attendedClasses,
+                    attendancePercentage: totalClasses > 0 
+                        ? ((attendedClasses / totalClasses) * 100).toFixed(2) 
+                        : 0
+                });
+            }
+        }
+
+        res.json(subjectAttendance);
+    } catch (error) {
+        console.error('Server error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+  
 
 // ------------------------------------------------
 // ---------- ROUTES FOR LOGGING IN ---------------

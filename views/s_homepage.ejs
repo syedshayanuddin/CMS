@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Dashboard</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+/* Reset some default styles */
+body, h1, h2, h3, p, ul, li, table {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  height: 100%;
+  background-color: #f4f4f4;
+}
+
+/* Container Styles */
+.container {
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px;
+  box-sizing: border-box; 
+}
+
+/* Student Info Styles */
+.student-info {
+  background-color: #f9f9f9;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  text-align: left;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 100%; /* Make student-info span the full width */
+  box-sizing: border-box; /* Ensure padding doesn't affect width */
+}
+
+.student-info h3 {
+  margin: 0;
+  color: #333;
+  text-align: center;
+}
+
+.student-info p {
+  margin: 5px 0;
+  color: #666;
+}
+
+/* Menu Styles */
+.menu {
+    display: flex;
+    width: 100%;
+    border-bottom: 2px solid #ddd;
+}
+.menu a {
+    flex: 1;
+    text-align: center;
+    padding: 10px;
+    text-decoration: none;
+    color: #666;
+    background-color: #f4f4f4;
+    transition: all 0.3s ease;
+}
+.menu a.active {
+    background-color: #6059d7;
+    color: white;
+    border-bottom: 2px solid #0056b3;
+}
+
+/* Content Section Styles */
+.content-section {
+    display: none;
+    padding: 20px;
+    background-color: white;
+}
+.content-section.active {
+    display: block;
+}
+
+/* Navbar Styles */
+.navbar {
+  background-color: #333;
+  color: #fff;
+  padding: 10px;
+  text-align: center;
+  width: 100%; /* Make the navbar span the full width */
+  box-sizing: border-box; /* Ensure padding doesn't affect width */
+}
+
+.navbar .logo {
+  /* Add logo styles here */
+}
+
+.navbar .welcome-text {
+  font-size: 18px;
+}
+
+
+/* STYLING FOR INSIGHTS */
+
+    .subject-attendance-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 15px;
+    }
+    .subject-card {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 15px;
+        background-color: #f9f9f9;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+    .subject-details {
+        margin-top: 10px;
+    }
+    .subject-progress {
+        display: flex;
+        justify-content: center;
+        margin-top: 10px;
+    }
+   
+  </style>
+
+  
+</head>
+<body>
+    <div class="container">
+      <!-- Navbar -->
+      <nav class="navbar">
+        <div class="logo"> <!-- Add your college logo here --></div>
+        <div class="welcome-text">Welcome, <%= student.name %></div>
+      </nav>
+  
+      <!-- Student Info Section -->
+      <div class="student-info">
+        <h3> Student Information</h3>
+        <p>Name: <%= student.name %></p>
+        <p>Roll Number: <%= student.rollnumber %></p>
+        <p>Class: <%= student.class %></p>
+      </div>
+      
+      <!-- Menu Section -->
+      <div class="menu">
+        <a href="#" class="tab-btn active" data-target="attendance">Attendance</a>
+        <a href="#" class="tab-btn" data-target="marks">Marks</a>
+        <a href="#" class="tab-btn" data-target="insights">Insights</a>
+      </div>
+
+      <!-- Attendance Content Section -->
+      <div id="attendance" class="content-section active">
+        <div id="attendanceContainer">
+            <p>Click 'Attendance' to view details</p>
+        </div>
+      </div>
+
+      <!-- Marks Content Section -->
+      <div id="marks" class="content-section">
+        <p>Marks content will be displayed here</p>
+      </div>
+
+      <!-- Insights Content Section -->
+      <div id="insights" class="content-section">
+        <p>Insights content will be displayed here</p>
+      </div>
+    </div>
+
+    <!-- JavaScript for Tab Switching and Progress Ring -->
+    <script>
+        // SVG Progress Ring Component
+        // SVG Progress Ring Component
+        function createProgressRing(percentage) {
+    const circumference = 2 * Math.PI * 100;
+    const offset = circumference - (percentage / 100 * circumference);
+    
+    const safePercentage = Number(percentage);
+    
+    if (isNaN(safePercentage)) {
+        console.error("Invalid percentage value:", percentage);
+        return ''; 
+    }
+
+    // Calculate the position for 75% progress using angle (75% of 360 degrees)
+    const angle = 75 / 100 * 360; // 75% of full circle
+    const markerX = 125 + 100 * Math.cos((angle - 90) * (Math.PI / 180)); // X coordinate
+    const markerY = 125 + 100 * Math.sin((angle - 90) * (Math.PI / 180)); // Y coordinate
+
+    return `
+        <div style="position: relative; width: 300px; height: 300px;">
+            <svg width="300" height="300" viewBox="0 0 250 250">
+                <circle 
+                    cx="125" 
+                    cy="125" 
+                    r="100" 
+                    fill="none" 
+                    stroke="#e0e0e0" 
+                    stroke-width="20"
+                    stroke-linecap="round" 
+                />
+                <circle 
+                    cx="125" 
+                    cy="125" 
+                    r="100" 
+                    fill="none" 
+                    stroke="${getProgressColor(safePercentage)}" 
+                    stroke-width="20"
+                    stroke-dasharray="${circumference}"
+                    stroke-dashoffset="${offset}"
+                    transform="rotate(-90 125 125)"
+                    style="transition: stroke-dashoffset 0.5s ease"
+                    stroke-linecap="round" 
+                />
+                <!-- Single Marker at 75% -->
+                <circle
+                    cx="${markerX}"
+                    cy="${markerY}"
+                    r="5"
+                    fill="#ff9800"
+                />
+                <text 
+                    x="125" 
+                    y="125" 
+                    text-anchor="middle" 
+                    dy=".3em" 
+                    font-size="40"
+                    font-weight="bold"
+                    fill="${getProgressColor(safePercentage)}"
+                >
+                    ${safePercentage.toFixed(1)}%
+                </text>
+            </svg>
+        </div>
+    `;
+}
+
+
+
+
+
+function getProgressColor(percentage) {
+    if (percentage < 50) return '#ff6b6b';   // Red for low attendance
+    if (percentage < 75) return '#feca57';   // Yellow for moderate
+    return '#48dbfb';  // Blue for good attendance
+}
+
+
+        // Tab switching logic
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                // Remove active class from all buttons and sections
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.content-section').forEach(section => section.classList.remove('active'));
+                
+                // Add active class to clicked button and corresponding section
+                e.target.classList.add('active');
+                document.getElementById(e.target.getAttribute('data-target')).classList.add('active');
+            });
+        });
+
+        // Attendance fetching logic
+        document.addEventListener('DOMContentLoaded', () => {
+            const attendanceContainer = document.getElementById('attendanceContainer');
+            const rollNumber = '<%= student.rollnumber %>';
+
+            async function fetchAttendance() {
+    try {
+        const response = await fetch(`/api/student-attendance/${rollNumber}`);
+        const data = await response.json();
+
+        attendanceContainer.innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: center; gap: 50px; margin-bottom: 20px;">
+                <div>
+                    ${createProgressRing(data.attendancePercentage)}
+                </div>
+                <div style="text-align: left;">
+                    <p>Total Hours: ${data.totalHours}</p>
+                    <p>Attended Hours: ${data.attendedHours}</p>
+                </div>
+            </div>
+            
+            <h4>Detailed Attendance</h4>
+            ${data.attendanceRecords.map(record => `
+                <div style="margin-bottom: 10px; border: 1px solid #ddd; padding: 10px;">
+                    <strong>Date: ${new Date(record.date).toLocaleDateString()}</strong>
+                    ${record.hourWiseDetails.map(hourDetail => `
+                        <p>
+                            Hour: ${hourDetail.hour}, 
+                            Subject: ${hourDetail.subject}, 
+                            Status: ${hourDetail.student_data.find(s => s.rollnumber === rollNumber).isPresent ? 'Present' : 'Absent'}
+                        </p>
+                    `).join('')}
+                </div>
+            `).join('')}
+        `;
+    } catch (error) {
+        attendanceContainer.innerHTML = `<p>Error fetching attendance: ${error.message}</p>`;
+    }
+}
+
+            // Fetch attendance when 'Attendance' tab is clicked
+            document.querySelector('.tab-btn[data-target="attendance"]').addEventListener('click', fetchAttendance);
+        });
+
+
+            // Add inside the existing script tag
+            async function fetchSubjectAttendance() {
+    const insightsContainer = document.getElementById('insights');
+    const rollNumber = '<%= student.rollnumber %>';
+
+    try {
+        const response = await fetch(`/api/student-subject-attendance/${rollNumber}`);
+        const subjectData = await response.json();
+
+        // Check if subjectData is an array
+        if (!Array.isArray(subjectData)) {
+            insightsContainer.innerHTML = `<p>No subject attendance data available</p>`;
+            return;
+        }
+
+        insightsContainer.innerHTML = `
+            <h3>Subject-wise Attendance Insights</h3>
+            <div class="subject-attendance-grid">
+                ${subjectData.map(subject => `
+                    <div class="subject-card">
+                        <h4>${subject.subject}</h4>
+                        <div class="subject-details">
+                            <p>Lecturer: ${subject.lecturer}</p>
+                            <p>Total Classes: ${subject.totalClasses}</p>
+                            <p>Attended Classes: ${subject.attendedClasses}</p>
+                            <div class="subject-progress">
+                                ${createProgressRing(parseFloat(subject.attendancePercentage))}
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    } catch (error) {
+        console.error('Error fetching insights:', error);
+        insightsContainer.innerHTML = `<p>Error fetching insights: ${error.message}</p>`;
+    }
+}
+
+// Add event listener for insights tab
+document.querySelector('.tab-btn[data-target="insights"]').addEventListener('click', fetchSubjectAttendance);
+
+
+
+    </script>
+
+</body>
+</html>
