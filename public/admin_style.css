@@ -1,0 +1,281 @@
+/* Base Styles */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+}
+
+/* Navbar Styles */
+.navbar {
+    background: #FFFFFF;
+    color: #4EBB74;
+    height: 40px;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    position: fixed;
+    width: calc(100% - 4rem);
+    top: 0;
+    z-index: 1000;
+}
+
+/* Sidebar Styles */
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    width: 250px;
+    background: #2e353a;
+    padding: 1.5rem;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+    z-index: 1001;
+    color: white;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-buttons {
+    margin-top: 80px;
+    flex: 1;
+}
+
+.sidebar button {
+    width: 100%;
+    text-align: left;
+    padding: 12px 16px;
+    margin-bottom: 10px;
+    border: none;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.1);
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sidebar button:hover {
+    background: rgba(255,255,255,0.2);
+    transform: translateX(5px);
+}
+
+.sidebar button i {
+    font-size: 20px;
+    min-width: 24px;
+}
+
+.sidebar-collapsed {
+    width: 60px;
+}
+
+.sidebar-collapsed button span {
+    display: none;
+}
+
+.sidebar-bottom {
+    margin-top: auto;
+    padding-bottom: 20px;
+    width: 100%;
+}
+
+/* Toggle Button Styles */
+.toggle-sidebar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 80px;
+    background: rgba(255,255,255,0.1);
+    border: none;
+    border-radius: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    color: white;
+    box-shadow: none;
+    transform: none !important;
+}
+
+.toggle-sidebar span {
+    margin-right: auto;
+    font-size: 18px;
+}
+
+.toggle-sidebar:hover {
+    background: rgba(255,255,255,0.2);
+}
+
+/* Content Section Styles */
+.content-section {
+    margin-left: 280px;
+    margin-top: 80px;
+    padding: 2rem;
+    transition: margin-left 0.3s ease;
+}
+
+.content-section-full {
+    margin-left: 90px;
+}
+
+/* Form Container Styles */
+.form-container {
+    background: white;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+/* Form Element Styles */
+label {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 5px;
+}
+
+input, select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+/* Subject Container Styles */
+.subject-container {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.subject-container input {
+    flex: 1;
+}
+
+/* Button Styles */
+.add-btn {
+    background: #4CAF50;
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 8px;
+}
+
+.remove-btn {
+    background: #f44336;
+    color: white;
+    width: 40px;
+    padding: 8px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button[type="submit"] {
+    background: #4EBB74;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: auto;
+    margin-top: 20px;
+}
+
+/* Selected Classes List Styles */
+#selectedClasses {
+    list-style: none;
+    padding: 0;
+}
+
+#selectedClasses li {
+    background: #e8f5e9;
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#selectedClasses button {
+    background: #f44336;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    width: auto;
+}
+
+/* Timetable Styles */
+#timetable {
+    margin-top: 20px;
+}
+
+#timetable input {
+    margin: 4px 0;
+}
+
+/* Heading Styles */
+h2 {
+    color: #2e353a;
+    margin-bottom: 20px;
+}
+
+h3 {
+    color: #2e353a;
+    margin: 20px 0;
+}
+
+.stats-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.stat-card i {
+    font-size: 40px;
+    color: #4EBB74;
+    margin-bottom: 10px;
+}
+
+.stat-card h3 {
+    margin: 10px 0;
+    color: #2e353a;
+}
+
+.stat-number {
+    font-size: 36px;
+    font-weight: bold;
+    color: #4EBB74;
+    margin: 0;
+}

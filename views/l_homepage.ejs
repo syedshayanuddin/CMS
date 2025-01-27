@@ -615,7 +615,7 @@ function toggleSidebar() {
                 <table class="attendance-table" id="marksTable">
                     <tr>
                         <th>S.No</th>
-                        <th>Roll No</th>
+                        <th onclick="sortTableAscending('Roll No')" style="cursor:pointer">Roll No ↕</th>
                         <th>Name</th>
                         <th onclick="sortTable('CIE1')" style="cursor:pointer">CIE1 ↕</th>
                         <th onclick="sortTable('CIE2')" style="cursor:pointer">CIE2 ↕</th>
@@ -641,13 +641,34 @@ function toggleSidebar() {
             const table = document.getElementById('marksTable');
             const rows = Array.from(table.querySelectorAll('tr:not(:first-child)'));
             const columnIndex = {
+                'Roll No': 1,
+                'CIE1': 3,
+                'CIE2': 4,
+                'Assignment': 5,
+                'Total': 6,
+            }[column];
+
+            rows.sort((a, b) => {
+                const aVal = Number(a.cells[columnIndex].textContent);
+                const bVal = Number(b.cells[columnIndex].textContent);
+                return bVal - aVal;
+            });
+
+            rows.forEach(row => table.appendChild(row));
+        }
+
+        function sortTableAscending(column) {
+            const table = document.getElementById('marksTable');
+            const rows = Array.from(table.querySelectorAll('tr:not(:first-child)'));
+            const columnIndex = {
+                'Roll No': 1,
                 'CIE1': 3,
                 'CIE2': 4,
                 'Assignment': 5,
                 'Total': 6
             }[column];
 
-            rows.sort((a, b) => {
+            rows.sort((b, a) => {
                 const aVal = Number(a.cells[columnIndex].textContent);
                 const bVal = Number(b.cells[columnIndex].textContent);
                 return bVal - aVal;

@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="/admin_style.css">
+</head>
+<body>
+    <div class="navbar">
+        <h2>Welcome Admin</h2>
+    </div>
+
+    <div class="sidebar" id="sidebar">
+        <button class="toggle-sidebar" onclick="toggleSidebar()">
+            <span>Admin Dashboard</span>
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="sidebar-buttons">
+            <button onclick="showAddClass()">
+                <i class="fas fa-chalkboard"></i>
+                <span>Add Class</span>
+            </button>
+            <button onclick="showAddLecturer()">
+                <i class="fas fa-chalkboard-teacher"></i>
+                <span>Add Lecturer</span>
+            </button>
+            <button onclick="showAddStudent()">
+                <i class="fas fa-user-graduate"></i>
+                <span>Add Student</span>
+            </button>
+            <button onclick="showAssignSubject()">
+              <i class="fas fa-link"></i>
+              <span>Assign Subjects</span>
+            </button>
+        </div>
+        <div class="sidebar-bottom">
+            <button onclick="location.href='/l_login'" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="content-section" id="mainContent"></div>
+
+    <script>
+        // Global variables
+        let selectedClasses = [];
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const content = document.querySelector('.content-section');
+            sidebar.classList.toggle('sidebar-collapsed');
+            content.classList.toggle('content-section-full');
+        }
+
+        // Add Class Functions
+        async function showAddClass() {
+            const content = document.getElementById('mainContent');
+            content.innerHTML = `
+                <h2>Add a New Class</h2>
+                <div class="form-container">
+                    <form id="classForm">
+                        <div class="form-group">
+                            <label for="classID">Class ID:</label>
+                            <input type="text" id="classID" name="classID" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="branch">Branch:</label>
+                            <input type="text" id="branch" name="branch" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="semester">Semester:</label>
+                            <input type="number" id="semester" name="semester" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Subjects:</label>
+                            <div id="subjects">
+                                <div class="subject-container">
+                                    <input type="text" name="subjects[]" placeholder="Enter Subject" required>
+                                    <button type="button" class="remove-btn" onclick="removeSubject(this)">X</button>
+                                </div>
+                            </div>
+                            <button type="button" class="add-btn" onclick="addSubject()">Add Subject</button>
+                        </div>
+
+                        <h3>Timetable (Mon-Sat, 6 Hours Each)</h3>
+                        <div id="timetable"></div>
+
+                        <button type="submit">Submit</button>
+                    </form>
+                </div>
+            `;
+
+            // Initialize timetable
+            const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+            const timetableDiv = document.getElementById('timetable');
+            days.forEach(day => {
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'form-group';
+                dayDiv.innerHTML = `
+                    <label>${day}:</label>
+                    ${Array.from({length: 6}, (_, i) => `
+                        <input type="text" name="${day.toLowerCase()}[]" placeholder="Hour ${i + 1} (Leave empty if no class)">
+                    `).join('')}
+                `;
+                timetableDiv.appendChild(dayDiv);
+            });
+
+            // Add form submit handler
+            document.getElementById('classForm').addEventListener('submit', handleClassSubmit);
+        }
+
+        function addSubject() {
+            let container = document.getElementById("subjects");
+            let newInput = document.createElement("div");
+            newInput.classList.add("subject-container");
+            newInput.innerHTML = `
+                <input type="text" name="subjects[]" placeholder="Enter Subject" required>
+                <button type="button" class="remove-btn" onclick="removeSubject(this)">X</button>
+            `;
+            container.appendChild(newInput);
+        }
+
+        function removeSubject(element) {
+            element.parentNode.remove();
+        }
+
+        async function handleClassSubmit(event) {
+            event.preventDefault();
+
+            let confirmUpload = confirm("Are you sure you want to upload this class?");
+            if (!confirmUpload) return;
+
+            let formData = new FormData(this);
+            let data = {
+                classID: formData.get("classID"),
+                branch: formData.get("branch"),
+                semester: formData.get("semester"),
+                subjects: formData.getAll("subjects[]").filter(s => s.trim() !== ""),
+                timeTable: []
+            };
+
+            const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+            days.forEach(day => {
+                let hours = {};
+                let hourInputs = document.querySelectorAll(`input[name="${day.toLowerCase()}[]"]`);
+                
+                hourInputs.forEach((input, index) => {
+                    if (input.value.trim() !== "") {
+                        hours[index + 1] = input.value.trim();
+                    }
+                });
+
+                if (Object.keys(hours).length > 0) {
+                    data.timeTable.push({ day, hours }); 
+                }
+            });
+
+            try {
+                let response = await fetch("/add-class", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(data)
+                });
+
+                let result = await response.json();
+                alert(result.message);
+                if (result.success) this.reset();
+            } catch (error) {
+                alert("Error adding class");
+            }
+        }
+
+        // Add Lecturer Functions
+        async function showAddLecturer() {
+            const content = document.getElementById('mainContent');
+            content.innerHTML = `
+                <h2>Add a New Lecturer</h2>
+                <form id="lecturerForm">
+                    <label for="name">Name:</label>
+                    <input type="text" id="name" name="name" required>
+
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" required>
+
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" required>
+
+                    <label for="classDropdown">Select Class:</label>
+                    <select id="classDropdown">
+                        <option value="">-- Select a class --</option>
+                    </select>
+                    <button type="button" id="addClassBtn">Add Class</button>
+
+                    <ul id="selectedClasses"></ul>
+
+                    <input type="hidden" id="selectedClassesInput" name="classesTaught">
+
+                    <button type="submit">Add Lecturer</button>
+                </form>
+            `;
+
+            // Reset selected classes
+            selectedClasses = [];
+            await loadClasses();
+            document.getElementById('lecturerForm').addEventListener('submit', handleLecturerSubmit);
+        }
+
+        async function loadClasses() {
+            try {
+                const response = await fetch("/api/classes");
+                const classes = await response.json();
+
+                const classDropdown = document.getElementById("classDropdown");
+                const selectedClassesList = document.getElementById("selectedClasses");
+                const selectedClassesInput = document.getElementById("selectedClassesInput");
+                const addClassBtn = document.getElementById("addClassBtn");
+
+                classDropdown.innerHTML = "";
+                classes.forEach(cls => {
+                    const option = document.createElement("option");
+                    option.value = cls.classID;
+                    option.textContent = cls.classID;
+                    classDropdown.appendChild(option);
+                });
+
+                // Add selected class to the list
+                addClassBtn.onclick = function() {
+                    const selectedValue = classDropdown.value;
+                    if (selectedValue && !selectedClasses.includes(selectedValue)) {
+                        selectedClasses.push(selectedValue);
+                        
+                        const listItem = document.createElement("li");
+                        listItem.textContent = selectedValue;
+
+                        const removeBtn = document.createElement("button");
+                        removeBtn.textContent = "Remove";
+                        removeBtn.onclick = function() {
+                            selectedClasses = selectedClasses.filter(cls => cls !== selectedValue);
+                            selectedClassesInput.value = JSON.stringify(selectedClasses);
+                            listItem.remove();
+                        };
+
+                        listItem.appendChild(removeBtn);
+                        selectedClassesList.appendChild(listItem);
+                        selectedClassesInput.value = JSON.stringify(selectedClasses);
+                    }
+                };
+            } catch (error) {
+                console.error("Error loading classes:", error);
+            }
+        }
+
+        async function handleLecturerSubmit(event) {
+            event.preventDefault();
+
+            const formData = {
+                name: document.getElementById("name").value,
+                username: document.getElementById("username").value,
+                password: document.getElementById("password").value,
+                classesTaught: selectedClasses
+            };
+
+            try {
+                const response = await fetch("/api/add-lecturer", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+                if (result.message) {
+                    alert(result.message);
+                    event.target.reset();
+                    selectedClasses = [];
+                    document.getElementById("selectedClasses").innerHTML = "";
+                } else if (result.error) {
+                    alert(result.error);
+                }
+            } catch (error) {
+                alert("Server Error!");
+            }
+        }
+
+        // Add Student Functions
+        async function showAddStudent() {
+            const content = document.getElementById('mainContent');
+            content.innerHTML = `
+                <h2>Add a New Student</h2>
+                <div class="form-container">
+                    <form id="studentForm">
+                        <div class="form-group">
+                            <label for="name">Student Name:</label>
+                            <input type="text" id="name" name="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="rollnumber">Roll Number:</label>
+                            <input type="text" id="rollnumber" name="rollnumber" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password:</label>
+                            <input type="password" id="password" name="password" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="class">Select Class:</label>
+                            <select id="class" name="class" required>
+                                <option value="">Loading...</option>
+                            </select>
+                        </div>
+                        <button type="submit">Add Student</button>
+                    </form>
+                </div>
+            `;
+
+            // Load classes for student form
+            try {
+                const response = await fetch("/api/classes");
+                const classes = await response.json();
+                const select = document.getElementById("class");
+                select.innerHTML = ""; 
+                classes.forEach(cls => {
+                    const option = document.createElement("option");
+                    option.value = cls.classID; 
+                    option.textContent = cls.classID;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error("Error loading classes:", error);
+            }
+
+            // Add form submit handler
+            document.getElementById('studentForm').addEventListener('submit', handleStudentSubmit);
+        }
+
+        async function handleStudentSubmit(event) {
+            event.preventDefault();
+
+            const studentData = {
+                name: document.getElementById("name").value,
+                rollnumber: document.getElementById("rollnumber").value,
+                password: document.getElementById("password").value,
+                class: document.getElementById("class").value
+            };
+
+            try {
+                const response = await fetch("/api/add-student", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(studentData)
+                });
+
+                const result = await response.json();
+                alert(result.message);
+                if (result.message === "Student added successfully") {
+                    event.target.reset();
+                }
+            } catch (error) {
+                alert("Error adding student");
+            }
+        }
+
+        async function showAssignSubject() {
+    const content = document.getElementById('mainContent');
+    content.innerHTML = `
+        <h2>Assign Subjects to Lecturers</h2>
+        <div class="form-container">
+            <form id="assignmentForm">
+                <div class="form-group">
+                    <label for="classSelect">Class:</label>
+                    <select id="classSelect" required>
+                        <option value="">Select Class</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="subjectSelect">Subject:</label>
+                    <select id="subjectSelect" required>
+                        <option value="">Select Subject</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="lecturerSelect">Lecturer:</label>
+                    <select id="lecturerSelect" required>
+                        <option value="">Select Lecturer</option>
+                    </select>
+                </div>
+
+                <button type="submit">Assign Subject</button>
+            </form>
+        </div>
+    `;
+
+    // Load data
+    try {
+        const [classesRes, lecturersRes] = await Promise.all([
+            fetch('/api/classes'),
+            fetch('/api/lecturers')
+        ]);
+        
+        const classes = await classesRes.json();
+        const lecturers = await lecturersRes.json();
+
+        const classSelect = document.getElementById('classSelect');
+        const lecturerSelect = document.getElementById('lecturerSelect');
+
+        classes.forEach(cls => {
+            const option = document.createElement('option');
+            option.value = cls.classID;
+            option.textContent = cls.classID;
+            classSelect.appendChild(option);
+        });
+
+        lecturers.forEach(lecturer => {
+            const option = document.createElement('option');
+            option.value = lecturer.lecturer_id;
+            option.textContent = lecturer.name;
+            lecturerSelect.appendChild(option);
+        });
+
+        // Add class change event listener
+        document.getElementById('classSelect').addEventListener('change', async function() {
+            const classID = this.value;
+            const subjectSelect = document.getElementById('subjectSelect');
+            subjectSelect.innerHTML = '<option value="">Select Subject</option>';
+
+            if (!classID) return;
+
+            try {
+                const response = await fetch(`/api/classes/${classID}`);
+                const classData = await response.json();
+
+                classData.subjects.forEach(subject => {
+                    const option = document.createElement('option');
+                    option.value = subject;
+                    option.textContent = subject;
+                    subjectSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading subjects:', error);
+            }
+        });
+
+        // Add form submit handler
+        document.getElementById('assignmentForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                classID: document.getElementById('classSelect').value,
+                subject: document.getElementById('subjectSelect').value,
+                lecturer_id: document.getElementById('lecturerSelect').value
+            };
+
+            try {
+                const response = await fetch('/api/subject-assignments', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+                alert(result.message || result.error);
+            } catch (error) {
+                alert('Error assigning subject');
+            }
+        });
+
+        } catch (error) {
+            console.error('Error loading data:', error);
+        }
+    }
+
+    async function showDashboard() {
+        try {
+            const [students, lecturers, classes] = await Promise.all([
+                fetch('/api/students/count').then(res => res.json()),
+                fetch('/api/lecturers/count').then(res => res.json()),
+                fetch('/api/classes/count').then(res => res.json())
+            ]);
+
+            const content = document.getElementById('mainContent');
+            content.innerHTML = `
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <i class="fas fa-user-graduate"></i>
+                        <h3>Total Students</h3>
+                        <p class="stat-number">${students.count}</p>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                        <h3>Total Lecturers</h3>
+                        <p class="stat-number">${lecturers.count}</p>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-chalkboard"></i>
+                        <h3>Total Classes</h3>
+                        <p class="stat-number">${classes.count}</p>
+                    </div>
+                </div>
+            `;
+        } catch (error) {
+            console.error('Error loading dashboard:', error);
+        }
+    }
+
+    window.onload = showDashboard;
+    </script>
+</body>
+</html>

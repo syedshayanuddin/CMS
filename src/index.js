@@ -57,6 +57,10 @@ app.get(`/l_homepage/:username`, (req, res) => {
     res.render("l_homepage");
 });
 
+app.get("/admin_page", (req, res) => {
+  res.render("admin_page")
+})
+
 // app.get(`/s_homepage/:rollNumber`, (req, res) => {
 //     res.render("s_homepage");
 // });
@@ -154,23 +158,72 @@ app.get("/api/subject-assignments", async (req, res) => {
     }
 });
 
+// app.post("/api/subject-assignments", async (req, res) => {
+//     try {
+//         const { classID, subject, lecturer_id } = req.body;
+
+//         const classDoc = await Class.findOne({ classID });
+//         if (!classDoc) return res.status(400).json({ error: "Class not found" });
+//         if (!classDoc.subjects.includes(subject)) return res.status(400).json({ error: "Subject not found in class" });
+
+//         const lecturer = await Lecturer.findOne({ lecturer_id });
+//         if (!lecturer) return res.status(400).json({ error: "Lecturer not found" });
+
+//         const assignment = new SubjectAssignment({
+//             classID,
+//             subject,
+//             lecturer_id,
+//             lecturer_name: lecturer.name
+//         });
+
+//         await assignment.save();
+//         res.json({ message: "Subject assigned successfully" });
+
+//     } catch (error) {
+//         if (error.code === 11000) {
+//             res.status(400).json({ error: "This subject is already assigned" });
+//         } else {
+//             res.status(500).json({ error: error.message });
+//         }
+//     }
+// });
+
 app.post("/api/subject-assignments", async (req, res) => {
     try {
         const { classID, subject, lecturer_id } = req.body;
 
+        // Check if class exists and has the subject
         const classDoc = await Class.findOne({ classID });
         if (!classDoc) return res.status(400).json({ error: "Class not found" });
         if (!classDoc.subjects.includes(subject)) return res.status(400).json({ error: "Subject not found in class" });
 
+        // Find lecturer
         const lecturer = await Lecturer.findOne({ lecturer_id });
         if (!lecturer) return res.status(400).json({ error: "Lecturer not found" });
 
+        // Check for time conflicts
+        const timeConflict = await checkTimeConflict(classDoc, subject, lecturer_id);
+        if (timeConflict) {
+            return res.status(400).json({ 
+                error: "Time conflict: Lecturer already has a class during one or more periods of this subject" 
+            });
+        }
+
+        // Create subject assignment
         const assignment = new SubjectAssignment({
             classID,
             subject,
             lecturer_id,
             lecturer_name: lecturer.name
         });
+
+        // Update lecturer's classesTaught if needed
+        if (!lecturer.classesTaught.includes(classID)) {
+            await Lecturer.updateOne(
+                { lecturer_id: lecturer_id },
+                { $push: { classesTaught: classID } }
+            );
+        }
 
         await assignment.save();
         res.json({ message: "Subject assigned successfully" });
@@ -183,6 +236,49 @@ app.post("/api/subject-assignments", async (req, res) => {
         }
     }
 });
+
+// Helper function to check for time conflicts
+async function checkTimeConflict(newClass, newSubject, lecturer_id) {
+    // Get all classes taught by this lecturer
+    const lecturerAssignments = await SubjectAssignment.find({ lecturer_id });
+    
+    // Get all class documents for the lecturer's assignments
+    const lecturerClasses = await Class.find({
+        classID: { $in: lecturerAssignments.map(a => a.classID) }
+    });
+
+    // Check each day's timetable
+    for (const day of newClass.timeTable) {
+        const newSubjectHours = [];
+        
+        // Get hours where new subject is taught
+        for (const [hour, subject] of Object.entries(day.hours)) {
+            if (subject === newSubject) {
+                newSubjectHours.push(parseInt(hour));
+            }
+        }
+
+        // Check against each existing class
+        for (const existingClass of lecturerClasses) {
+            const existingDaySchedule = existingClass.timeTable.find(t => t.day === day.day);
+            if (!existingDaySchedule) continue;
+
+            // Get the subject taught in this class by this lecturer
+            const existingAssignment = lecturerAssignments.find(a => a.classID === existingClass.classID);
+            if (!existingAssignment) continue;
+
+            // Check each hour where new subject would be taught
+            for (const newHour of newSubjectHours) {
+                // If lecturer already teaches any subject at this hour
+                if (existingDaySchedule.hours[newHour] === existingAssignment.subject) {
+                    return true; // Conflict found
+                }
+            }
+        }
+    }
+
+    return false; // No conflicts found
+}
 
 app.get("/api/lecturers", async (req, res) => {
     try {
@@ -200,6 +296,36 @@ app.get("/api/classes/:classID", async (req, res) => {
             return res.status(404).json({ error: "Class not found" });
         }
         res.json(classDoc);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// ------------------------------------------------
+// ------------ ADMIN DASHBOARD ROUTES ------------
+// ------------------------------------------------
+app.get('/api/students/count', async (req, res) => {
+    try {
+        const count = await Student.countDocuments();
+        res.json({ count });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/api/lecturers/count', async (req, res) => {
+    try {
+        const count = await Lecturer.countDocuments();
+        res.json({ count });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/api/classes/count', async (req, res) => {
+    try {
+        const count = await Class.countDocuments();
+        res.json({ count });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -467,9 +593,9 @@ app.get('/api/insights/general/:lecturer_id', async (req, res) => {
                 presenteePercentage: (totalPresentees / (totalHours * students.length)) * 100,
                 belowFortyCount: {
                     CIE1: marks.filter(m => (m.marks.find(mk => 
-                        mk.subject === subject.subject).CIE1 / 50) * 100 < 40).length,
+                        mk.subject === subject.subject).CIE1 / 20) * 100 < 40).length,
                     CIE2: marks.filter(m => (m.marks.find(mk => 
-                        mk.subject === subject.subject).CIE2 / 50) * 100 < 40).length,
+                        mk.subject === subject.subject).CIE2 / 20) * 100 < 40).length,
                     Overall: studentsBelow40,
                     Percentage: (studentsBelow40 / students.length) * 100
                 }
