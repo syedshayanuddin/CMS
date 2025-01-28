@@ -102,6 +102,7 @@ body {
     color: white;
     box-shadow: none;
     transform: none !important;
+    justify-content: center;
 }
 
 .toggle-sidebar span {
@@ -278,4 +279,33 @@ h3 {
     font-weight: bold;
     color: #4EBB74;
     margin: 0;
+}
+
+.timetable-grid {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+}
+
+.timetable-grid th,
+.timetable-grid td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+}
+
+.timetable-grid th {
+    background-color: #f5f5f5;
+    font-weight: bold;
+}
+
+.timetable-grid select {
+    width: 100%;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.timetable-grid tr:hover {
+    background-color: #f9f9f9;
 }

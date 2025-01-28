@@ -158,36 +158,6 @@ app.get("/api/subject-assignments", async (req, res) => {
     }
 });
 
-// app.post("/api/subject-assignments", async (req, res) => {
-//     try {
-//         const { classID, subject, lecturer_id } = req.body;
-
-//         const classDoc = await Class.findOne({ classID });
-//         if (!classDoc) return res.status(400).json({ error: "Class not found" });
-//         if (!classDoc.subjects.includes(subject)) return res.status(400).json({ error: "Subject not found in class" });
-
-//         const lecturer = await Lecturer.findOne({ lecturer_id });
-//         if (!lecturer) return res.status(400).json({ error: "Lecturer not found" });
-
-//         const assignment = new SubjectAssignment({
-//             classID,
-//             subject,
-//             lecturer_id,
-//             lecturer_name: lecturer.name
-//         });
-
-//         await assignment.save();
-//         res.json({ message: "Subject assigned successfully" });
-
-//     } catch (error) {
-//         if (error.code === 11000) {
-//             res.status(400).json({ error: "This subject is already assigned" });
-//         } else {
-//             res.status(500).json({ error: error.message });
-//         }
-//     }
-// });
-
 app.post("/api/subject-assignments", async (req, res) => {
     try {
         const { classID, subject, lecturer_id } = req.body;

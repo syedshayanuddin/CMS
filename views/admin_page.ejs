@@ -56,60 +56,103 @@
 
         // Add Class Functions
         async function showAddClass() {
-            const content = document.getElementById('mainContent');
-            content.innerHTML = `
-                <h2>Add a New Class</h2>
-                <div class="form-container">
-                    <form id="classForm">
-                        <div class="form-group">
-                            <label for="classID">Class ID:</label>
-                            <input type="text" id="classID" name="classID" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="branch">Branch:</label>
-                            <input type="text" id="branch" name="branch" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="semester">Semester:</label>
-                            <input type="number" id="semester" name="semester" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Subjects:</label>
-                            <div id="subjects">
-                                <div class="subject-container">
-                                    <input type="text" name="subjects[]" placeholder="Enter Subject" required>
-                                    <button type="button" class="remove-btn" onclick="removeSubject(this)">X</button>
-                                </div>
+        const content = document.getElementById('mainContent');
+        content.innerHTML = `
+            <h2>Add a New Class</h2>
+            <div class="form-container">
+                <form id="classForm">
+                    <div class="form-group">
+                        <label for="classID">Class ID:</label>
+                        <input type="text" id="classID" name="classID" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="branch">Branch:</label>
+                        <input type="text" id="branch" name="branch" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="semester">Semester:</label>
+                        <input type="number" id="semester" name="semester" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Subjects:</label>
+                        <div id="subjects">
+                            <div class="subject-container">
+                                <input type="text" name="subjects[]" placeholder="Enter Subject" required>
+                                <button type="button" class="remove-btn" onclick="removeSubject(this)">X</button>
                             </div>
-                            <button type="button" class="add-btn" onclick="addSubject()">Add Subject</button>
                         </div>
+                        <button type="button" class="add-btn" onclick="addSubject()">Add Subject</button>
+                    </div>
 
-                        <h3>Timetable (Mon-Sat, 6 Hours Each)</h3>
-                        <div id="timetable"></div>
+                    <h3>Timetable</h3>
+                    <div id="timetable"></div>
 
-                        <button type="submit">Submit</button>
-                    </form>
-                </div>
-            `;
+                    <button type="submit">Submit</button>
+                </form>
+            </div>
+        `;
 
-            // Initialize timetable
+             // Initialize timetable with horizontal hours
             const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
             const timetableDiv = document.getElementById('timetable');
+            
+            // Create table
+            let tableHTML = `
+                <table class="timetable-grid">
+                    <tr>
+                        <th>Day</th>
+                        <th>Hour 1</th>
+                        <th>Hour 2</th>
+                        <th>Hour 3</th>
+                        <th>Hour 4</th>
+                        <th>Hour 5</th>
+                        <th>Hour 6</th>
+                    </tr>
+            `;
+
             days.forEach(day => {
-                const dayDiv = document.createElement('div');
-                dayDiv.className = 'form-group';
-                dayDiv.innerHTML = `
-                    <label>${day}:</label>
-                    ${Array.from({length: 6}, (_, i) => `
-                        <input type="text" name="${day.toLowerCase()}[]" placeholder="Hour ${i + 1} (Leave empty if no class)">
-                    `).join('')}
+                tableHTML += `
+                    <tr>
+                        <td>${day}</td>
+                        ${Array.from({length: 6}, (_, i) => `
+                            <td>
+                                <select name="${day.toLowerCase()}_${i+1}" class="subject-select">
+                                    <option value="">No Class</option>
+                                </select>
+                            </td>
+                        `).join('')}
+                    </tr>
                 `;
-                timetableDiv.appendChild(dayDiv);
             });
 
-            // Add form submit handler
-            document.getElementById('classForm').addEventListener('submit', handleClassSubmit);
+            tableHTML += '</table>';
+            timetableDiv.innerHTML = tableHTML;
+
+            // Add event listener for subject changes
+            document.getElementById('subjects').addEventListener('change', updateSubjectDropdowns);
+        }
+
+        // Function to update all subject dropdowns
+        function updateSubjectDropdowns() {
+            const subjects = Array.from(document.querySelectorAll('input[name="subjects[]"]'))
+                .map(input => input.value)
+                .filter(subject => subject.trim() !== '');
+
+            const selects = document.querySelectorAll('.subject-select');
+            selects.forEach(select => {
+                const currentValue = select.value;
+                select.innerHTML = '<option value="">No Class</option>';
+                subjects.forEach(subject => {
+                    const option = document.createElement('option');
+                    option.value = subject;
+                    option.textContent = subject;
+                    if (subject === currentValue) {
+                        option.selected = true;
+                    }
+                    select.appendChild(option);
+                });
+            });
         }
 
         function addSubject() {
@@ -138,20 +181,21 @@
                 classID: formData.get("classID"),
                 branch: formData.get("branch"),
                 semester: formData.get("semester"),
-                subjects: formData.getAll("subjects[]").filter(s => s.trim() !== ""),
+                subjects: Array.from(document.querySelectorAll('input[name="subjects[]"]'))
+                    .map(input => input.value)
+                    .filter(s => s.trim() !== ""),
                 timeTable: []
             };
 
             const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
             days.forEach(day => {
                 let hours = {};
-                let hourInputs = document.querySelectorAll(`input[name="${day.toLowerCase()}[]"]`);
-                
-                hourInputs.forEach((input, index) => {
-                    if (input.value.trim() !== "") {
-                        hours[index + 1] = input.value.trim();
+                for(let i = 1; i <= 6; i++) {
+                    const value = document.querySelector(`select[name="${day.toLowerCase()}_${i}"]`).value;
+                    if(value) {
+                        hours[i] = value;
                     }
-                });
+                }
 
                 if (Object.keys(hours).length > 0) {
                     data.timeTable.push({ day, hours }); 
