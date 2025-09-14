@@ -1,20 +1,29 @@
-1. Clone the repo on your local machine.
-2. Open the file in VSCode
-3. run "npm install"
-4. to be able to run the webpages, enter "nodemon src/index.js"
+# College Management System (CMS)
 
+A web-based portal to manage student records, attendance, marks, and performance insights.  
+Built using **Node.js, Express.js, MongoDB, and EJS**.
 
-TO CLONE THE FILE FOLLOW THE STEPS
-1. Open cmd
-2. Keep desktop as your current directory
-3. TYPE:  git clone git@github.com:itzfarzaan/CMS.git
-4. The folder should now be created.
+---
 
-TO PUSH CHANGES
-1. git add .
-2. check the changed files using:  git status
-3. git commit -m "COMMIT_MSG"
-4. git push
+## 🚀 Features
+- Student profile management  
+- Attendance tracking  
+- Marks and grade management  
+- Performance insights dashboard  
+- Secure login for students  
 
-TO PULL CHANGES
-1. git pull origin main
+---
+
+## 🛠️ Tech Stack
+- **Frontend:** EJS, HTML, CSS  
+- **Backend:** Node.js, Express.js  
+- **Database:** MongoDB  
+
+---
+
+## ▶️ Getting Started
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/syedshayanuddin/CMS.git
+cd CMS
